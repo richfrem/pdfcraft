@@ -62,6 +62,16 @@ class _ImageElement:
     rect: Rect
 
 
+@dataclass
+class _ShapeElement:
+    """Internal record of placed vector shape."""
+
+    rect: Rect
+    fill_color: Optional[Color] = None
+    stroke_color: Optional[Color] = None
+    line_width: float = 1.0
+
+
 class DocumentSession:
     """High-level in-process document editing session adhering to APDFL patterns."""
 
@@ -70,6 +80,7 @@ class DocumentSession:
         self._pages: List[Page] = []
         self._text_elements: Dict[int, List[_TextElement]] = {}
         self._image_elements: Dict[int, List[_ImageElement]] = {}
+        self._shape_elements: Dict[int, List[_ShapeElement]] = {}
 
     @classmethod
     def create(cls) -> DocumentSession:
@@ -108,6 +119,7 @@ class DocumentSession:
         self._pages.append(page)
         self._text_elements[page_num] = []
         self._image_elements[page_num] = []
+        self._shape_elements[page_num] = []
         return page
 
     def get_page(self, page_number: int) -> Page:
@@ -145,16 +157,99 @@ class DocumentSession:
         # Shift elements dictionary down
         new_text: Dict[int, List[_TextElement]] = {}
         new_img: Dict[int, List[_ImageElement]] = {}
+        new_shp: Dict[int, List[_ShapeElement]] = {}
 
         for i, p in enumerate(self._pages, start=1):
             old_idx = p.page_number
             p.page_number = i
             new_text[i] = self._text_elements.get(old_idx, [])
             new_img[i] = self._image_elements.get(old_idx, [])
+            new_shp[i] = self._shape_elements.get(old_idx, [])
 
         self._text_elements = new_text
         self._image_elements = new_img
+        self._shape_elements = new_shp
         return removed
+
+    def add_rect(
+        self,
+        page_number: int,
+        rect: Rect,
+        fill_color: Optional[Color] = None,
+        stroke_color: Optional[Color] = None,
+        line_width: float = 1.0,
+    ) -> None:
+        """Draws a vector rectangle with optional fill and stroke."""
+        if page_number < 1 or page_number > len(self._pages):
+            raise InvalidArgumentError(f"Page index {page_number} out of bounds")
+        self._shape_elements[page_number].append(
+            _ShapeElement(rect=rect, fill_color=fill_color, stroke_color=stroke_color, line_width=line_width)
+        )
+
+    def add_stamp(
+        self,
+        page_number: int,
+        text: str,
+        rect: Rect,
+        color: Optional[Color] = None,
+    ) -> None:
+        """Places a stamped approval/review banner (matching README stamps)."""
+        c = color or Color.rgb(0.12, 0.65, 0.35)  # Default emerald
+        # Outer stamp border
+        self.add_rect(page_number, rect, fill_color=Color.rgb(0.95, 0.98, 0.95), stroke_color=c, line_width=2.5)
+        # Inner text auto-scaled to fit width and height
+        max_font_sz_by_width = (rect.width - 20.0) / max(1, len(text) * 0.60)
+        font_sz = min(rect.height * 0.42, max_font_sz_by_width)
+        t_style = Style(font_name="Helvetica-Bold", font_size=font_sz, color=c)
+        approx_w = len(text) * font_sz * 0.60
+        text_x = rect.x + (rect.width - approx_w) / 2.0
+        text_y = rect.y + (rect.height - font_sz) / 2.0
+        self.add_text(page_number, text, text_x, text_y, t_style)
+
+    def add_comment_card(
+        self,
+        page_number: int,
+        author: str,
+        comment: str,
+        rect: Rect,
+    ) -> None:
+        """Places a threaded comment annotation card on the margin."""
+        # Card background & border
+        self.add_rect(page_number, rect, fill_color=Color.rgb(0.98, 0.98, 0.99), stroke_color=Color.rgb(0.78, 0.82, 0.88), line_width=1.0)
+        # Author header banner
+        header_rect = Rect(rect.x, rect.y + rect.height - 20.0, rect.width, 20.0)
+        self.add_rect(page_number, header_rect, fill_color=Color.rgb(0.90, 0.93, 0.97))
+        # Author name
+        auth_style = Style(font_name="Helvetica-Bold", font_size=9.0, color=Color.rgb(0.15, 0.25, 0.45))
+        self.add_text(page_number, author, rect.x + 8.0, rect.y + rect.height - 14.0, auth_style)
+        # Comment message
+        body_style = Style(font_name="Helvetica", font_size=8.5, color=Color.rgb(0.20, 0.22, 0.25))
+        self.add_text(page_number, comment, rect.x + 8.0, rect.y + rect.height - 35.0, body_style)
+
+    def add_form_field_view(
+        self,
+        page_number: int,
+        label: str,
+        rect: Rect,
+        value: str = "",
+        field_type: str = "text",
+    ) -> None:
+        """Draws visual interactive form field with focus tinting."""
+        label_style = Style(font_name="Helvetica-Bold", font_size=10.0, color=Color.rgb(0.2, 0.25, 0.3))
+        self.add_text(page_number, label, rect.x, rect.y + rect.height + 4.0, label_style)
+
+        if field_type == "checkbox":
+            box_rect = Rect(rect.x, rect.y, rect.height, rect.height)
+            self.add_rect(page_number, box_rect, fill_color=Color.rgb(0.92, 0.96, 1.0), stroke_color=Color.rgb(0.2, 0.5, 0.8), line_width=1.5)
+            if value.lower() in ("true", "1", "yes", "x"):
+                check_style = Style(font_name="Helvetica-Bold", font_size=12.0, color=Color.rgb(0.1, 0.4, 0.75))
+                self.add_text(page_number, "X", rect.x + 4.0, rect.y + 3.0, check_style)
+        else:
+            # Text box outline
+            self.add_rect(page_number, rect, fill_color=Color.rgb(0.96, 0.98, 1.0), stroke_color=Color.rgb(0.65, 0.75, 0.88), line_width=1.0)
+            if value:
+                val_style = Style(font_name="Courier", font_size=10.0, color=Color.rgb(0.1, 0.1, 0.15))
+                self.add_text(page_number, value, rect.x + 6.0, rect.y + 6.0, val_style)
 
     def add_text(
         self,
@@ -348,7 +443,25 @@ class DocumentSession:
                 f"0.75 0.80 0.85 RG 2 w 20 20 {page_model.media_box.width - 40} {page_model.media_box.height - 40} re S\n"
             )
 
-            # 2. Text elements
+            # 2. Vector Shapes (Rectangles, Stamps, Field Outlines)
+            for shp in self._shape_elements.get(p_idx, []):
+                cmds: List[str] = []
+                if shp.line_width > 0:
+                    cmds.append(f"{shp.line_width:.2f} w")
+                if shp.fill_color is not None:
+                    cmds.append(f"{shp.fill_color.r:.3f} {shp.fill_color.g:.3f} {shp.fill_color.b:.3f} rg")
+                if shp.stroke_color is not None:
+                    cmds.append(f"{shp.stroke_color.r:.3f} {shp.stroke_color.g:.3f} {shp.stroke_color.b:.3f} RG")
+                cmds.append(f"{shp.rect.x:.2f} {shp.rect.y:.2f} {shp.rect.width:.2f} {shp.rect.height:.2f} re")
+                if shp.fill_color is not None and shp.stroke_color is not None:
+                    cmds.append("B\n")
+                elif shp.fill_color is not None:
+                    cmds.append("f\n")
+                elif shp.stroke_color is not None:
+                    cmds.append("S\n")
+                stream_chunks.append(" ".join(cmds))
+
+            # 3. Text elements
             fonts_used: Dict[str, str] = {}
             for t_elem in self._text_elements.get(p_idx, []):
                 font_name = t_elem.style.font_name

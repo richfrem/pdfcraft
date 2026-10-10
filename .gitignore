@@ -21,3 +21,6 @@ plan/
 
 # Local sample documents (gitignored per AGENTS.md §1)
 /sample-docs/
+
+# Local diagnostic and test scripts
+/scripts/

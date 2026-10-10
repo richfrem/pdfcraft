@@ -9,19 +9,35 @@ use crate::PdfCraftClient;
 /// Local in-process client for running document transformations without an HTTP server.
 pub struct LocalClient {
     executor: Arc<dyn OperationExecutor>,
+    limits: ResourceLimits,
 }
 
 impl LocalClient {
-    /// Creates a new `LocalClient` with the provided engine executor implementation.
+    /// Creates a new `LocalClient` with the provided engine executor implementation and custom limits.
     pub fn new(executor: Arc<dyn OperationExecutor>) -> Self {
-        Self { executor }
+        Self {
+            executor,
+            limits: ResourceLimits::default(),
+        }
+    }
+
+    /// Configures resource constraints on this client.
+    pub fn with_limits(mut self, limits: ResourceLimits) -> Self {
+        self.limits = limits;
+        self
+    }
+
+    pub fn limits(&self) -> &ResourceLimits {
+        &self.limits
     }
 }
 
 impl Default for LocalClient {
     fn default() -> Self {
+        let limits = ResourceLimits::default();
         Self {
-            executor: Arc::new(crate::engine_adapter::AutomationEngineAdapter::default()),
+            executor: Arc::new(crate::engine_adapter::AutomationEngineAdapter::new(limits.max_memory_bytes)),
+            limits,
         }
     }
 }
@@ -31,10 +47,28 @@ impl PdfCraftClient for LocalClient {
         if files.is_empty() {
             return Err(SdkError::InvalidArgument("files list cannot be empty".into()));
         }
+        for file in files {
+            if let Some(len) = file.byte_len() {
+                if len > self.limits.max_request_bytes {
+                    return Err(SdkError::QuotaExceeded(format!(
+                        "File size ({len} bytes) exceeds configured max_request_bytes ({} bytes)",
+                        self.limits.max_request_bytes
+                    )));
+                }
+            }
+        }
         self.executor.execute_merge(files, &options)
     }
 
     fn split(&self, file: &DocumentSource, mode: SplitMode) -> Result<SplitResult, SdkError> {
+        if let Some(len) = file.byte_len() {
+            if len > self.limits.max_request_bytes {
+                return Err(SdkError::QuotaExceeded(format!(
+                    "File size ({len} bytes) exceeds configured max_request_bytes ({} bytes)",
+                    self.limits.max_request_bytes
+                )));
+            }
+        }
         self.executor.execute_split(file, &mode)
     }
 

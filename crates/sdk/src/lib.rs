@@ -18,7 +18,7 @@ pub use error::SdkError;
 pub use local::LocalClient;
 pub use ports::OperationExecutor;
 pub use types::{
-    DocumentResult, DocumentSource, ImageFormat, MergeOptions, RenderOptions, SplitMode, SplitResult,
+    DocumentResult, DocumentSource, ImageFormat, MergeOptions, RenderOptions, ResourceLimits, SplitMode, SplitResult,
 };
 
 /// Unified document processing client trait shared across in-process and remote transports.

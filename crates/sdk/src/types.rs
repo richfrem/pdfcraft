@@ -152,3 +152,21 @@ pub enum ImageFormat {
     Png,
     Jpeg,
 }
+
+/// Resource constraints configuring memory and processing budgets.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceLimits {
+    pub max_request_bytes: usize,
+    pub max_output_bytes: usize,
+    pub max_memory_bytes: u64,
+}
+
+impl Default for ResourceLimits {
+    fn default() -> Self {
+        Self {
+            max_request_bytes: 100 * 1024 * 1024, // 100 MB
+            max_output_bytes: 500 * 1024 * 1024,  // 500 MB
+            max_memory_bytes: 10 * 1024 * 1024,   // 10 MB memory buffer before spilling to disk
+        }
+    }
+}

@@ -44,4 +44,4 @@ fn main() -> Result<(), SdkError> {
 
 ## Documentation
 
-For full architecture details, enterprise deployment guidelines, and multi-language guides, refer to the canonical [SDK Guide](../../docs/sdk.md).
+For full architecture details, enterprise deployment guidelines, and multi-language guides, refer to the canonical [SDK Guide](../../docs/sdk/README.md).

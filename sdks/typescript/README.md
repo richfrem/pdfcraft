@@ -52,4 +52,4 @@ await merged.saveToPath("output.pdf");
 
 ## Documentation
 
-For full documentation and API references, see the canonical [SDK Guide](../../docs/sdk.md).
+For full documentation and API references, see the canonical [SDK Guide](../../docs/sdk/README.md).

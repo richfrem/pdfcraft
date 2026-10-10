@@ -505,6 +505,32 @@ python3 docs/sdk/examples/python/e2e_document_lifecycle.py \
   --dpi 200
 ```
 
+### Python End-to-End OCR & Markdown Pipeline
+* **Source Script:** [`docs/sdk/examples/python/ocr_document_to_markdown.py`](examples/python/ocr_document_to_markdown.py)
+* **Description:** Ingests PDF documents, renders visual rasters at 150 DPI, extracts text layouts, runs Optical Character Recognition (Tesseract OCR), and produces structured Markdown files with frontmatter metadata.
+* **Run from the command line:**
+```bash
+# Ingest and convert sample documents to Markdown in sample-docs/outputs/
+python3 docs/sdk/examples/python/ocr_document_to_markdown.py
+
+# Process custom document
+python3 docs/sdk/examples/python/ocr_document_to_markdown.py \
+  "sample-docs/Optional-Car-Wordings-BCAA policy info.pdf" \
+  --output-dir sample-docs/outputs \
+  --max-pages 10
+```
+
+### Python README-Level Showcase Specimen Generator
+* **Source Script:** [`docs/sdk/examples/python/readme_showcase_builder.py`](examples/python/readme_showcase_builder.py)
+* **Description:** Programmatically synthesizes the multi-page specimen document featuring all capabilities shown in the main `README.md` (Scripts of the World, vertical Japanese, two-column editorial flow with drop caps, interactive AcroForms, PKCS#7 signature blocks, APPROVED stamps, and threaded comment margin cards).
+* **Run from the command line:**
+```bash
+# Generate 5-page PDF specimen and high-resolution page previews
+python3 docs/sdk/examples/python/readme_showcase_builder.py \
+  --output dist/readme_showcase_specimen.pdf \
+  --render-previews
+```
+
 ---
 
 ## Documentation Architecture: Domain Hub vs Monolith

@@ -1,10 +1,27 @@
-//! Strongly typed error models conforming to PdfCraft's "Never Crash" principles.
+//! error.rs — Strongly typed error models conforming to PdfCraft's "Never Crash" principles.
+//! =========================================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/sdk/src/error.rs
 //! Purpose:
-//!   Provides structured, actionable errors without disclosing internal paths,
-//!   passwords, or uncontained stack traces. Maps cleanly to RFC 7807 Problem Details.
+//!     Provides structured, actionable errors without disclosing internal paths,
+//!     passwords, or uncontained stack traces. Maps cleanly to RFC 7807 Problem Details.
+//!
+//! Layer:
+//!     Domain Layer / Error Handling
+//!
+//! Key Input Dependencies:
+//!     - thiserror::Error
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_sdk::error::SdkError;
+//!     let err = SdkError::InvalidArgument("Empty input".into());
+//!     assert_eq!(err.http_status(), 400);
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - SdkError: High-level SDK error enum (Io, FileNotFound, PageOutOfBounds, InvalidArgument, QuotaExceeded, EngineError, EnginePanic, UnsupportedOperation)
+//!     - SdkError::http_status: Maps error to RFC 7807 HTTP status code
+//!     - SdkError::error_code: Returns machine-readable uppercase snake_case error identifier
 
 use thiserror::Error;
 

@@ -1,4 +1,33 @@
-//! In-process engine driver executing operations through an injected `OperationExecutor`.
+//! local.rs — In-process engine driver executing operations through an injected OperationExecutor.
+//! ==================================================================================================
+//!
+//! Purpose:
+//!     Provides direct in-process document processing linking directly to the Rust engine
+//!     through the abstract OperationExecutor port (open-source alternative to Adobe PDFL).
+//!
+//! Layer:
+//!     Client Layer / Facade
+//!
+//! Key Input Dependencies:
+//!     - crate::ports::OperationExecutor
+//!     - crate::engine_adapter::AutomationEngineAdapter
+//!     - crate::types::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, ResourceLimits, SplitMode, SplitResult}
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_sdk::{LocalClient, PdfCraftClient, DocumentSource, MergeOptions};
+//!     let client = LocalClient::default();
+//!     let doc = DocumentSource::from_bytes(b"%PDF-1.4...".to_vec(), None);
+//!     let result = client.merge(&[doc], MergeOptions::default());
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - LocalClient: In-process client implementing PdfCraftClient trait
+//!     - LocalClient::default: Constructs client backed by AutomationEngineAdapter
+//!     - LocalClient::with_executor: Constructs client with injected custom executor
+//!     - LocalClient::merge: Merges multiple PDF sources
+//!     - LocalClient::split: Splits PDF into separate files
+//!     - LocalClient::render_page: Renders page at physical DPI
 
 use std::sync::Arc;
 use crate::error::SdkError;

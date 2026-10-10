@@ -1,10 +1,32 @@
-//! Strongly typed request and response value objects for document operations.
+//! types.rs — Strongly typed request and response value objects for document operations.
+//! =========================================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/sdk/src/types.rs
 //! Purpose:
-//!   Decouples the SDK from raw filesystem paths (`DocumentSource`) and
-//!   prevents high-memory allocations via streamed/file-backed results (`DocumentResult`).
+//!     Decouples the SDK from raw filesystem paths (`DocumentSource`) and
+//!     prevents high-memory allocations via streamed/file-backed results (`DocumentResult`).
+//!
+//! Layer:
+//!     Domain Layer / Data Transfer Objects
+//!
+//! Key Input Dependencies:
+//!     - std::path::PathBuf (File paths)
+//!     - serde (Serialization and deserialization)
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_sdk::types::{DocumentSource, MergeOptions};
+//!     let src = DocumentSource::from_bytes(b"%PDF-1.4...".to_vec(), None);
+//!     let opts = MergeOptions::default();
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - DocumentSource: Input abstraction for PDF files (Path or Bytes)
+//!     - DocumentResult: Output abstraction (Memory or File)
+//!     - MergeOptions: Options configuring document merging
+//!     - SplitMode: Modes for splitting PDF documents (EveryNPages, BeforePages, AtBookmarks)
+//!     - SplitResult: Split output file paths list
+//!     - RenderOptions: Options for rendering pages (dpi, image format)
+//!     - ResourceLimits: Safety resource quota limits (max request bytes, max memory, max pages)
 
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};

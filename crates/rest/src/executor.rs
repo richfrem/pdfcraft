@@ -1,10 +1,32 @@
-//! Bounded blocking executor with worker pool governance and queue wait timeouts.
+//! executor.rs — Bounded blocking executor with worker pool governance and queue wait timeouts.
+//! ==============================================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/rest/src/executor.rs
 //! Purpose:
-//!   Guarantees system responsiveness under load by bounding worker concurrency,
-//!   enforcing admission queue timeouts, and preventing event-loop starvation.
+//!     Guarantees system responsiveness under compute load by bounding worker concurrency,
+//!     enforcing admission queue wait timeouts, and preventing event-loop / OS thread starvation.
+//!
+//! Layer:
+//!     REST Service / Execution Governance Layer
+//!
+//! Key Input Dependencies:
+//!     - pdfcraft_sdk::OperationExecutor
+//!     - std::sync::{Arc, Condvar, Mutex}
+//!     - thiserror::Error
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_rest::executor::{BlockingExecutor, ExecutorConfig};
+//!     // Wrapped around an engine OperationExecutor
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - ExecutionError: Errors during execution (QueueTimeout, ExecutionTimeout, WorkerPanic, Sdk)
+//!     - ExecutorConfig: Configuration settings (max_concurrency, queue_timeout, exec_timeout)
+//!     - BlockingExecutor: Concurrency governor wrapping OperationExecutor
+//!     - BlockingExecutor::available_capacity: Count of currently idle worker slots
+//!     - BlockingExecutor::execute_merge: Dispatches merge within bounded semaphore
+//!     - BlockingExecutor::execute_split: Dispatches split within bounded semaphore
+//!     - BlockingExecutor::execute_render: Dispatches render within bounded semaphore
 
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};

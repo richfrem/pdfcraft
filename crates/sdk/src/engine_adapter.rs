@@ -1,13 +1,36 @@
-//! Concrete `OperationExecutor` adapter connecting `crates/sdk` to `pdfcraft_automation`.
+//! engine_adapter.rs — Concrete OperationExecutor adapter connecting crates/sdk to pdfcraft_automation.
+//! =====================================================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/sdk/src/engine_adapter.rs
 //! Purpose:
-//!   Executes document transformations headlessly through `pdfcraft_automation::Automation`
-//!   inside an ephemeral sandbox with:
-//!   - Panic containment (`std::panic::catch_unwind`) converting engine panics to `SdkError::EnginePanic`
-//!   - Strict path containment within a temporary directory
-//!   - High-DPI physical rendering calculation decoupled from display PPI (#739)
+//!     Executes document transformations headlessly through `pdfcraft_automation::Automation`
+//!     inside an ephemeral sandbox with:
+//!     - Panic containment (`std::panic::catch_unwind`) converting engine panics to `SdkError::EnginePanic`
+//!     - Strict path containment within an isolated temporary directory
+//!     - High-DPI physical rendering calculation decoupled from display PPI (#739)
+//!     - Automatic disk spillover for outputs exceeding memory limits
+//!
+//! Layer:
+//!     Infrastructure / Adapters Layer
+//!
+//! Key Input Dependencies:
+//!     - pdfcraft_automation::Automation
+//!     - tempfile::TempDir (Isolated ephemeral sandbox directory)
+//!     - crate::ports::OperationExecutor
+//!     - crate::types::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, ResourceLimits, SplitMode, SplitResult}
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_sdk::AutomationEngineAdapter;
+//!     let adapter = AutomationEngineAdapter::default();
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - AutomationEngineAdapter: Concrete engine adapter implementing OperationExecutor
+//!     - AutomationEngineAdapter::new: Constructs adapter with custom limits
+//!     - AutomationEngineAdapter::default: Constructs adapter with standard production limits
+//!     - ExecutionSandbox: RAII sandbox creating private tempdir with guaranteed cleanup on Drop
+//!     - ExecutionSandbox::materialize_source: Writes DocumentSource to disk if needed
+//!     - ExecutionSandbox::collect_output: Collects output and spills to disk if exceeding max_memory_bytes
 
 use std::fs;
 use std::panic::{AssertUnwindSafe, catch_unwind};

@@ -1,10 +1,36 @@
-//! HTTP route handlers and request dispatching for document processing operations.
+//! routes.rs — HTTP route handlers and request dispatching for document processing operations.
+//! ==============================================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/rest/src/routes.rs
 //! Purpose:
-//!   Parses HTTP requests, enforces bearer authentication, routes to sync/async
-//!   workflows, and returns RFC 7807 problem details or typed results.
+//!     Parses HTTP requests, enforces bearer authentication, routes to sync/async
+//!     workflows, and returns RFC 7807 problem details or typed results.
+//!
+//! Layer:
+//!     REST Service / API Routing & Presentation Layer
+//!
+//! Key Input Dependencies:
+//!     - crate::executor::BlockingExecutor
+//!     - crate::storage::JobRepository
+//!     - crate::models::{JobId, JobRecord, JobResponse, JobState, MergePayload, RenderPayload, SplitPayload}
+//!     - crate::problem::ProblemDetails
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_rest::routes::{HttpRequest, RestService};
+//!     // service.dispatch(&req) -> HttpResponse
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - HttpRequest: In-memory HTTP request DTO (with_header, with_body, header)
+//!     - HttpResponse: In-memory HTTP response DTO (ok_json, accepted_json, ok_bytes, problem)
+//!     - RestService: Dispatcher mapping HTTP routes to engine execution and job management
+//!     - RestService::dispatch: Main request router enforcing auth and dispatching paths
+//!     - RestService::handle_merge: Handles POST /v1/merged-pdf (sync or async 202)
+//!     - RestService::handle_split: Handles POST /v1/split-pdf
+//!     - RestService::handle_page_preview: Handles POST /v1/page-preview
+//!     - RestService::handle_get_job: Handles GET /v1/jobs/{id}
+//!     - RestService::handle_get_job_result: Handles GET /v1/jobs/{id}/result
+//!     - RestService::handle_cancel_job: Handles DELETE /v1/jobs/{id}
 
 use std::collections::HashMap;
 use std::fs;

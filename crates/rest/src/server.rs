@@ -1,10 +1,31 @@
-//! Secure loopback HTTP server for on-premise document processing.
+//! server.rs — Secure loopback HTTP server for on-premise document processing.
+//! ==============================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/rest/src/server.rs
 //! Purpose:
-//!   Binds to 127.0.0.1 loopback interface, decodes HTTP/1.1 requests,
-//!   invokes the RestService dispatcher, and writes RFC 7807 formatted responses.
+//!     Binds to 127.0.0.1 loopback interface, decodes HTTP/1.1 requests, enforces
+//!     public binding confirmations and optional Bearer auth, invokes RestService,
+//!     and streams RFC 7807 responses.
+//!
+//! Layer:
+//!     REST Service / HTTP Server Transport Layer
+//!
+//! Key Input Dependencies:
+//!     - std::net::{TcpListener, TcpStream, SocketAddr}
+//!     - crate::routes::{HttpRequest, HttpResponse, RestService}
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_rest::server::{HttpServer, ServerConfig};
+//!     // let server = HttpServer::start(service, ServerConfig::default())?;
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - ServerConfig: Server configuration (bind_addr, allow_public_bind, auth_token)
+//!     - HttpServer: Running HTTP server handle with background listener thread
+//!     - HttpServer::start: Starts server on background thread with loopback security check
+//!     - HttpServer::local_addr: Bound local socket address
+//!     - HttpServer::port: Port number of running server
+//!     - HttpServer::stop: Gracefully stops the listener thread
 
 use std::collections::HashMap;
 use std::io::{BufRead, BufReader, Read, Write};

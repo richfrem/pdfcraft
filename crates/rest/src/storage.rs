@@ -1,10 +1,31 @@
-//! Durable Job Repository with atomic state transitions and terminal immutability.
+//! storage.rs — Durable Job Repository with atomic state transitions and terminal immutability.
+//! ==============================================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/rest/src/storage.rs
 //! Purpose:
-//!   Enforces atomic compare-and-swap state transitions and guarantees immutability
-//!   of terminal job states (Succeeded, Failed, Canceled).
+//!     Enforces atomic compare-and-swap state transitions and guarantees immutability
+//!     of terminal job states (Succeeded, Failed, Canceled) across both in-memory and durable backends.
+//!
+//! Layer:
+//!     REST Service / Storage & State Management Layer
+//!
+//! Key Input Dependencies:
+//!     - crate::models::{JobId, JobRecord, JobState}
+//!     - pdfcraft_sdk::{DocumentResult, SplitResult}
+//!     - thiserror::Error
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_rest::storage::{InMemoryJobRepository, JobRepository};
+//!     use pdfcraft_rest::models::{JobId, JobState};
+//!     let repo = InMemoryJobRepository::new();
+//!     repo.transition(&JobId::new("job-1"), JobState::Queued, JobState::Running, None, None, None);
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - JobError: Storage errors (NotFound, TerminalStateConflict, StateConflict, StorageFailure)
+//!     - JobRepository: Repository trait (create, get, transition, delete, list)
+//!     - InMemoryJobRepository: Lock-protected in-memory implementation
+//!     - DurableFileJobRepository: Crash-safe append/atomic JSON disk journal with recovery on startup
 
 use std::collections::HashMap;
 use std::fs::{self, File};

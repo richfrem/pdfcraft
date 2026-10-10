@@ -1,10 +1,33 @@
-//! Models and DTOs for the REST Document Processing Service (Issue #872).
+//! models.rs — Models and DTOs for the REST Document Processing Service (Issue #872).
+//! ====================================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/rest/src/models.rs
 //! Purpose:
-//!   Provides strongly typed request/response transfer objects and durable job records
-//!   for the on-premise REST processing daemon.
+//!     Provides strongly typed request/response transfer objects and durable job records
+//!     for the on-premise REST processing daemon.
+//!
+//! Layer:
+//!     REST Service / Data Transfer Layer
+//!
+//! Key Input Dependencies:
+//!     - pdfcraft_sdk::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, SplitMode, SplitResult}
+//!     - serde::{Deserialize, Serialize}
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_rest::models::{JobId, JobRecord, JobState};
+//!     let job_id = JobId::generate();
+//!     let record = JobRecord::new_queued(job_id, "merge", None);
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - JobId: Unique identifier for background jobs (generate, new, as_str)
+//!     - JobState: Lifecycle state enum (Queued, Running, Succeeded, Failed, Canceled, is_terminal)
+//!     - JobRecord: Durable persistent job representation with progress and result
+//!     - JobResponse: External JSON view of a job for API responses
+//!     - MergePayload: Inbound payload for merging documents
+//!     - SplitPayload: Inbound payload for splitting documents
+//!     - RenderPayload: Inbound payload for rendering page previews
+//!     - SourcePayload: Inbound document source (Path or base64 Bytes)
 
 use std::fmt;
 use std::path::PathBuf;

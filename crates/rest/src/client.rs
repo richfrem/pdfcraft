@@ -1,10 +1,33 @@
-//! Remote REST client implementing the unified `PdfCraftClient` trait (Issue #872).
+//! client.rs — Remote REST client implementing the unified PdfCraftClient trait (Issue #872).
+//! =========================================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/rest/src/client.rs
 //! Purpose:
-//!   Connects to an on-premise PdfCraft REST daemon, providing 100% semantic parity
-//!   with LocalClient through identical input/output types and error mappings.
+//!     Connects to an on-premise PdfCraft REST daemon, providing 100% semantic parity
+//!     with LocalClient through identical input/output types and error mappings.
+//!
+//! Layer:
+//!     REST Service / Client Transport Layer
+//!
+//! Key Input Dependencies:
+//!     - pdfcraft_sdk::PdfCraftClient
+//!     - pdfcraft_sdk::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, SdkError, SplitMode, SplitResult}
+//!     - crate::routes::{HttpRequest, HttpResponse, RestService}
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_rest::client::RestClient;
+//!     use pdfcraft_sdk::PdfCraftClient;
+//!     let client = RestClient::remote("http://127.0.0.1:8080", None);
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - RestClient: Client enum supporting Direct (in-process) and Remote (HTTP network) modes
+//!     - RestClient::direct: In-process service invocation bypassing network stack
+//!     - RestClient::remote: Remote HTTP/1.1 client connecting to base URL
+//!     - RestClient::merge: Merges documents with synchronous or polling resolution
+//!     - RestClient::split: Splits document
+//!     - RestClient::render_page: Renders page to image format
+//!     - RestClient::poll_job_result: Polls background job until completion or error
 
 use std::sync::Arc;
 use std::time::Duration;

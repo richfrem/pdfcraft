@@ -1,9 +1,28 @@
-//! RFC 7807 Problem Details serialization for HTTP error responses.
+//! problem.rs — RFC 7807 Problem Details serialization for HTTP error responses.
+//! ==============================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/rest/src/problem.rs
 //! Purpose:
-//!   Formats errors as standardized application/problem+json payloads conforming to RFC 7807.
+//!     Formats REST API errors as standardized application/problem+json payloads
+//!     conforming to RFC 7807, eliminating leaky internal error strings and uncontained panics.
+//!
+//! Layer:
+//!     REST Service / Error Formatting Layer
+//!
+//! Key Input Dependencies:
+//!     - serde::{Deserialize, Serialize}
+//!     - pdfcraft_sdk::SdkError
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_rest::problem::ProblemDetails;
+//!     let err = ProblemDetails::bad_request("Page index must be >= 1");
+//!     assert_eq!(err.status, 400);
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - ProblemDetails: Standard RFC 7807 error payload (new, bad_request, unauthorized, not_found, conflict, payload_too_large, too_many_requests, internal_error, not_implemented, service_unavailable)
+//!     - InvalidParam: Representation of a faulty request parameter
+//!     - From<SdkError> for ProblemDetails: Automatic conversion preserving HTTP status and machine error codes
 
 use serde::{Deserialize, Serialize};
 use pdfcraft_sdk::SdkError;

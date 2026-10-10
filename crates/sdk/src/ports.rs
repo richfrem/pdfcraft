@@ -1,10 +1,26 @@
-//! Application ports decoupling client facades from concrete engine execution.
+//! ports.rs — Application ports decoupling client facades from concrete engine execution.
+//! =========================================================================================
 //!
-//! # Architecture Reference
-//! Module: crates/sdk/src/ports.rs
 //! Purpose:
-//!   Enforces Hexagonal / Ports-and-Adapters boundary so `LocalClient` depends
-//!   on an abstract `OperationExecutor` rather than concrete engine structs.
+//!     Enforces Hexagonal / Ports-and-Adapters boundary so `LocalClient` depends
+//!     on an abstract `OperationExecutor` rather than concrete engine structs.
+//!
+//! Layer:
+//!     Application Layer / Ports
+//!
+//! Key Input Dependencies:
+//!     - crate::error::SdkError
+//!     - crate::types::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, SplitMode, SplitResult}
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_sdk::ports::OperationExecutor;
+//!     // Implemented by AutomationEngineAdapter or testing mocks
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - OperationCommand: Strongly typed document command for execution
+//!     - OperationExecutor: Abstract engine executor trait (execute_merge, execute_split, execute_render)
 
 use std::sync::Arc;
 use crate::error::SdkError;

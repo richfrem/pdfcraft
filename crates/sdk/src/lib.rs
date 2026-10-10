@@ -1,9 +1,32 @@
-//! pdfcraft-sdk — Unified Document Processing SDK for PdfCraft (Issue #872).
+//! lib.rs — Unified Document Processing SDK for PdfCraft (Issue #872).
+//! =========================================================================
 //!
-//! Provides dual execution modes:
-//! 1. `LocalClient`: In-process execution linking directly to `pdfcraft-engine` and `pdfcraft-automation`
-//!    through the `OperationExecutor` port (open-source alternative to Adobe PDF Library / PDFL).
-//! 2. `RestClient`: Connects over HTTP/HTTPS to an on-premise `pdfcraft-rest` service.
+//! Purpose:
+//!     Main entry point for pdfcraft-sdk. Defines the unified PdfCraftClient trait
+//!     and re-exports domain models, error hierarchies, engine adapters, and the LocalClient.
+//!
+//! Layer:
+//!     Core SDK Root
+//!
+//! Key Input Dependencies:
+//!     - pdfcraft-automation
+//!     - pdfcraft-engine
+//!
+//! Usage Examples:
+//!     ```rust
+//!     use pdfcraft_sdk::{LocalClient, PdfCraftClient, DocumentSource, MergeOptions};
+//!     let client = LocalClient::default();
+//!     let doc = DocumentSource::from_bytes(b"%PDF-1.4...".to_vec(), None);
+//!     let res = client.merge(&[doc], MergeOptions::default());
+//!     ```
+//!
+//! Key Types & Functions Index:
+//!     - PdfCraftClient: Unified document processing client trait (merge, split, render_page)
+//!     - LocalClient: In-process client facade
+//!     - AutomationEngineAdapter: Concrete engine adapter implementing OperationExecutor
+//!     - SdkError: Strongly typed error enum
+//!     - DocumentSource: Input abstraction (Path or Bytes)
+//!     - DocumentResult: Output abstraction (Memory or File)
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 

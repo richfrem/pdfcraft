@@ -18,5 +18,6 @@ This directory contains client libraries and API specifications for integrating 
 
 ## Comprehensive Guides
 
-- [**PdfCraft SDK & REST Service Guide**](../docs/sdk.md): Full architecture details, enterprise deployment guidelines, and multi-language tutorials.
-- [**SDK API Reference Manual**](../docs/sdk-api-reference.md): Complete domain-by-domain function reference with parameter tables, return types, and code examples for Rust, Python, and TypeScript.
+- [**PdfCraft SDK & REST Service Guide**](../docs/sdk/README.md): Full architecture details, enterprise deployment guidelines, and multi-language tutorials.
+- [**SDK API Reference Manual**](../docs/sdk/api-reference.md): Complete domain-by-domain function reference with parameter tables, return types, and code examples for Rust, Python, and TypeScript.
+- [**Runnable CLI Code Examples**](../docs/sdk/examples/): Standalone executable examples for the full document lifecycle.

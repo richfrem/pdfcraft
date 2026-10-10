@@ -53,4 +53,4 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ## Documentation
 
-For full REST route specifications, schema payloads, and multi-language guides, refer to the canonical [SDK Guide](../../docs/sdk.md).
+For full REST route specifications, schema payloads, and multi-language guides, refer to the canonical [SDK Guide](../../docs/sdk/README.md).

@@ -11,8 +11,8 @@ lifecycle using the PdfCraft Python SDK:
   6. Serialize to a valid PDF file and render a preview PNG
 
 Usage:
-  python3 docs/examples/python/e2e_document_lifecycle.py
-  python3 docs/examples/python/e2e_document_lifecycle.py --output my_doc.pdf --preview my_doc.png
+  python3 docs/sdk/examples/python/e2e_document_lifecycle.py
+  python3 docs/sdk/examples/python/e2e_document_lifecycle.py --output my_doc.pdf --preview my_doc.png
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 # Automatically add local SDK package to sys.path so the example runs out of the box
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[4]
 SDK_PYTHON_DIR = REPO_ROOT / "sdks" / "python"
 if str(SDK_PYTHON_DIR) not in sys.path:
     sys.path.insert(0, str(SDK_PYTHON_DIR))

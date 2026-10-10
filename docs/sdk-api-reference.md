@@ -22,6 +22,8 @@ This manual provides the canonical, domain-by-domain API reference for the **Pdf
 - [Domain 13: Metadata & File Attachments](#domain-13-metadata--file-attachments)
 - [Domain 14: High-Level Pipeline Operations (`merge`, `split`, `render_page`)](#domain-14-high-level-pipeline-operations)
 - [Domain 15: Error Taxonomy & RFC 7807 Mapping](#domain-15-error-taxonomy--rfc-7807-mapping)
+- [Runnable Code Examples & CLI Demonstration](#runnable-code-examples--cli-demonstration)
+- [Documentation Architecture: Domain Hub vs Monolith](#documentation-architecture-domain-hub-vs-monolith)
 
 ---
 
@@ -474,3 +476,60 @@ Every error emitted by the SDK is strongly typed and maps directly to RFC 7807 P
 | `QuotaExceeded(msg)` | 413 Payload Too Large | `urn:pdfcraft:error:quota-exceeded` | Input file exceeds `max_request_bytes` threshold. |
 | `Timeout(msg)` | 504 Gateway Timeout | `urn:pdfcraft:error:timeout` | Execution deadline exceeded on long-running task. |
 | `EnginePanic(msg)` | 500 Internal Error | `urn:pdfcraft:error:engine-panic` | Contained engine panic. Process remains healthy. |
+
+---
+
+## Runnable Code Examples & CLI Demonstration
+
+Executable reference scripts are stored under [`docs/examples/`](examples/):
+
+### Python End-to-End Document Lifecycle CLI
+* **Source Script:** [`docs/examples/python/e2e_document_lifecycle.py`](examples/python/e2e_document_lifecycle.py)
+* **Description:** A complete, self-contained CLI script exercising all 5 stages of the document lifecycle:
+  1. **Document Creation:** Initializes `DocumentSession.create()`
+  2. **Page Operations:** Adds pages, rotates Page 2 by 90° (landscape), adjusts MediaBox dimensions, and deletes Page 3 with automatic index renumbering.
+  3. **Typography & Styling:** Places text across standard fonts (`Helvetica-Bold`, `Helvetica`, `Times-Roman`, `Courier`), verifies `Style.to_string()` contract, and executes inline multi-style token transitions (`StyleTransition`).
+  4. **Text Search:** Performs pattern search via bounded `DocTextFinder` and reports hit coordinates (`DocTextFinderMatch`).
+  5. **Image Management:** Embeds synthetic raster images as PDF XObjects, locates them by ID, and removes temporary watermarks.
+  6. **Serialization & Render:** Exports to ISO 32000-2 PDF and renders a 150 DPI preview PNG via `pdftoppm`.
+
+**Run from the command line:**
+```bash
+# Basic run generating dist/example_lifecycle.pdf and preview PNG
+python3 docs/examples/python/e2e_document_lifecycle.py
+
+# Custom output paths and rendering options
+python3 docs/examples/python/e2e_document_lifecycle.py \
+  --output dist/custom_output.pdf \
+  --preview dist/custom_preview.png \
+  --dpi 200
+```
+
+---
+
+## Documentation Architecture: Domain Hub vs Monolith
+
+### Recommendation: Domain Folder Architecture with Hub Index
+
+When managing enterprise API documentation for 266+ canonical types across 18 domains (matching Datalogics APDFL / Adobe PDFL), **a folder of dedicated domain pages with a root hub index** is strongly recommended over a single monolithic file:
+
+```
+docs/sdk/
+├── README.md               # Master Hub: Architecture, quickstart, cross-language mapping
+├── document.md             # Domain: Document Layer (Document, Page, Bookmark, ViewDestination)
+├── text.md                 # Domain: Text & Fonts (Style, StyleTransition, Word, DocTextFinder)
+├── graphics.md             # Domain: Content & Graphics State (Rect, Matrix, Color, Path)
+├── annotations.md          # Domain: Annotations & Actions (GoToAction, Link, Redaction)
+├── images.md               # Domain: Image Processing (XObject, raster conversion)
+├── forms.md                # Domain: Forms & Data Exchange (Field, TextField, FDF/XFDF)
+├── security.md             # Domain: Digital Signatures & Security (SignDoc, Encryption)
+├── optimization.md         # Domain: PDF Optimization & Flate Compression
+└── lowlevel.md             # Domain: Low-Level COS Layer (CosObj, CosDict, CosStream)
+```
+
+### Strategic Rationale:
+1. **Maintainability & Git Conflict Isolation:** Domain teams can update typography (`text.md`) or cryptographic signing (`security.md`) independently without cross-domain merge conflicts on a 30,000-line monolithic file.
+2. **Modern Documentation Site Compatibility:** Static site generators (VitePress, Docusaurus, MkDocs, mdBook) require individual page routes for deep linking, breadcrumb navigation, search indexation, and multi-tab code snippets (Rust / Python / TypeScript).
+3. **Context Window & Developer Experience:** Developers investigating a specific task (e.g. text redaction or PDF form filling) only need to load that single focused domain document rather than scrolling through an exhaustive 40-page reference.
+4. **Authoritative Parity Mapping:** Each domain page links directly to its entries in [`parity/apdfl-catalog.json`](../parity/apdfl-catalog.json) and runnable test fixtures.
+

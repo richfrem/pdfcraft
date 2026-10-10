@@ -2,6 +2,9 @@
 
 The **PdfCraft Document Processing SDK** provides a high-performance, `#![forbid(unsafe_code)]`, memory-safe document processing engine. It serves as an open-source alternative to the proprietary Adobe PDF Library (PDFL) for in-process execution, and pdfRest / Adobe PDF Services for containerized on-premise REST deployments.
 
+> [!TIP]
+> For the complete function-by-function reference organized by domain with exhaustive parameters, return types, and code snippets, see the [**SDK API Reference Manual**](sdk-api-reference.md).
+
 ---
 
 ## 1. Architectural Model & Layer Boundaries
@@ -350,9 +353,10 @@ run().catch(console.error);
 
 | Document Type | Location | Tracked in Git? | Description |
 |---|---|---|---|
-| **Public User Guide** | [`docs/sdk.md`](file:///Users/richardfremmerlid/Projects/pdfcraft/docs/sdk.md) | **Yes** | Canonical developer documentation across Rust, Python, and TypeScript. |
+| **Public User Guide** | [`docs/sdk.md`](sdk.md) | **Yes** | Canonical developer documentation across Rust, Python, and TypeScript. |
+| **API Reference Manual**| [`docs/sdk-api-reference.md`](sdk-api-reference.md) | **Yes** | Exhaustive domain-by-domain function reference with full signatures and examples. |
 | **Package READMEs** | `crates/sdk/README.md`<br>`crates/rest/README.md`<br>`sdks/python/README.md`<br>`sdks/typescript/README.md` | **Yes** | Quickstarts for crates.io, PyPI, and npm registry packages. |
-| **API Specification** | [`sdks/openapi.json`](file:///Users/richardfremmerlid/Projects/pdfcraft/sdks/openapi.json) | **Yes** | Canonical OpenAPI 3.1.0 schema for the REST service. |
+| **API Specification** | [`sdks/openapi.json`](../sdks/openapi.json) | **Yes** | Canonical OpenAPI 3.1.0 schema for the REST service. |
 | **Architecture Specification** | `docs/plans/pdfcraft-rest-sdk-plan.md` | **No** (Gitignored) | Comprehensive technical architecture and design document. |
 | **Implementation Tasks** | `docs/plans/tasks.md` | **No** (Gitignored) | Engineering task breakdown across Phases 1–5. |
 | **Local Test Fixtures** | `/sample-docs/` | **No** (Gitignored) | Local test files (never committed or published per `AGENTS.md` §1 asset policy). |

@@ -152,6 +152,8 @@ pub enum SplitMode {
     MaxFileSizeMb(f64),
 }
 
+pub use crate::image::ImageFormat;
+
 /// Rendering configuration strictly calculating physical DPI decoupled from monitor PPI (#739).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RenderOptions {
@@ -166,13 +168,6 @@ impl Default for RenderOptions {
             format: ImageFormat::Png,
         }
     }
-}
-
-/// Target image raster format.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum ImageFormat {
-    Png,
-    Jpeg,
 }
 
 /// Resource constraints configuring memory and processing budgets.

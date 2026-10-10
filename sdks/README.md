@@ -16,6 +16,7 @@ This directory contains client libraries and API specifications for integrating 
 - **OpenAPI 3.1 Specification:** [`sdks/openapi.json`](openapi.json) documents all HTTP REST routes (`/v1/merged-pdf`, `/v1/split-pdf`, `/v1/page-preview`, `/v1/jobs/{id}`, `/v1/jobs/{id}/result`).
 - **Contract Drift Checker:** Run `python3 sdks/check_contract_drift.py` in CI to ensure 100% alignment between OpenAPI schemas, Rust models, Python dataclasses, and TypeScript types.
 
-## Comprehensive Guide
+## Comprehensive Guides
 
-For full architecture details, enterprise deployment guidelines, and tutorials, refer to the [PdfCraft SDK & REST Service Guide](../docs/sdk.md).
+- [**PdfCraft SDK & REST Service Guide**](../docs/sdk.md): Full architecture details, enterprise deployment guidelines, and multi-language tutorials.
+- [**SDK API Reference Manual**](../docs/sdk-api-reference.md): Complete domain-by-domain function reference with parameter tables, return types, and code examples for Rust, Python, and TypeScript.

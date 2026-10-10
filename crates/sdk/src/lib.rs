@@ -8,10 +8,12 @@
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
 
 pub mod error;
+pub mod engine_adapter;
 pub mod local;
 pub mod ports;
 pub mod types;
 
+pub use engine_adapter::AutomationEngineAdapter;
 pub use error::SdkError;
 pub use local::LocalClient;
 pub use ports::OperationExecutor;

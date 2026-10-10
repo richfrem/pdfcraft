@@ -18,6 +18,14 @@ impl LocalClient {
     }
 }
 
+impl Default for LocalClient {
+    fn default() -> Self {
+        Self {
+            executor: Arc::new(crate::engine_adapter::AutomationEngineAdapter::default()),
+        }
+    }
+}
+
 impl PdfCraftClient for LocalClient {
     fn merge(&self, files: &[DocumentSource], options: MergeOptions) -> Result<DocumentResult, SdkError> {
         if files.is_empty() {

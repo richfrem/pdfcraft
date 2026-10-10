@@ -98,12 +98,81 @@ impl Text {
     }
 }
 
-/// Extracted word token with geometrical bounding coordinates.
+/// Visual typography style used within a word, defining font, size, and color.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Style {
+    pub color: Color,
+    pub font_name: String,
+    pub font_size: f64,
+}
+
+impl Style {
+    pub fn new(font_name: impl Into<String>, font_size: f64, color: Color) -> Self {
+        Self {
+            font_name: font_name.into(),
+            font_size,
+            color,
+        }
+    }
+}
+
+impl std::fmt::Display for Style {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "[color={:?}, fontsize={}, fontname={}]",
+            self.color, self.font_size, self.font_name
+        )
+    }
+}
+
+/// Represents a typographical style transition occurring at a specific character offset in a word.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct StyleTransition {
+    pub char_index: usize,
+    pub style: Style,
+}
+
+impl StyleTransition {
+    pub fn new(char_index: usize, style: Style) -> Self {
+        Self { char_index, style }
+    }
+}
+
+/// Extracted word token with geometrical bounding coordinates and typographical styles.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Word {
     pub text: String,
     pub bounding_box: Rect,
     pub quads: Vec<Quad>,
+    pub styles: Vec<StyleTransition>,
+}
+
+impl Word {
+    pub fn new(text: impl Into<String>, bounding_box: Rect, quads: Vec<Quad>) -> Self {
+        Self {
+            text: text.into(),
+            bounding_box,
+            quads,
+            styles: Vec::new(),
+        }
+    }
+}
+
+/// Configuration settings for the WordFinder algorithm.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct WordFinderConfig {
+    pub preserve_ligatures: bool,
+    pub precise_quads: bool,
+    pub decompose_hyphenated_words: bool,
+}
+
+/// Configuration settings for text pattern and keyword search.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct DocTextFinderConfig {
+    pub case_sensitive: bool,
+    pub whole_words_only: bool,
+    pub regex: bool,
 }
 
 /// Search hit result produced by document text search.

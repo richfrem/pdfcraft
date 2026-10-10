@@ -78,7 +78,10 @@ pub use lowlevel::{NameTree, NumberTree, PDFObject, PDFReference};
 pub use metadata::{FileAttachment, FileSpecification, WatermarkParams};
 pub use optimization::{CompressionType, FlattenTransparencyParams, OptimizationParams, PDFOptimizer};
 pub use security::{DigitalSignature, EncryptionType, PermissionsFlags, SignDoc};
-pub use text::{DocTextFinderMatch, Font, Text, TextRun, TextState, Word};
+pub use text::{
+    DocTextFinderConfig, DocTextFinderMatch, Font, Style, StyleTransition, Text, TextRun, TextState, Word,
+    WordFinderConfig,
+};
 
 /// Unified document processing client trait shared across in-process and remote transports.
 pub trait PdfCraftClient {

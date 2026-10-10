@@ -17,6 +17,7 @@ from pdfcraft.errors import (
 )
 from pdfcraft.local import LocalClient
 from pdfcraft.rest import RestClient
+from pdfcraft.session import DocumentSession
 from pdfcraft.types import (
     Action,
     AcroFormExportType,
@@ -74,6 +75,7 @@ __all__ = [
     "DocTextFinderMatch",
     "Document",
     "DocumentResult",
+    "DocumentSession",
     "DocumentSource",
     "Field",
     "FitMode",

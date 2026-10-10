@@ -62,3 +62,18 @@ export interface ProblemDetails {
         reason: string;
     }[];
 }
+export interface DocumentSession {
+    numPages: number;
+    pages: Page[];
+    addPage(width?: number, height?: number, rotationDegrees?: number): Page;
+    getPage(pageNumber: number): Page;
+    modifyPage(pageNumber: number, rotationDegrees?: number, mediaBox?: Rect): Page;
+    removePage(pageNumber: number): Page;
+    addText(pageNumber: number, text: string, x: number, y: number, style?: Style): void;
+    addStyledLine(pageNumber: number, x: number, y: number, baseText: string, transitions: StyleTransition[]): void;
+    findText(query: string, config?: DocTextFinderConfig): DocTextFinderMatch[];
+    addImage(pageNumber: number, imageSource: Uint8Array, rect: Rect, imageId?: string): string;
+    removeImage(pageNumber: number, imageId: string): boolean;
+    save(targetPath: string): Promise<DocumentResult>;
+    renderPage(pageNumber: number, outputPath: string, dpi?: number): Promise<string>;
+}

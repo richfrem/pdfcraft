@@ -521,13 +521,13 @@ python3 docs/sdk/examples/python/ocr_document_to_markdown.py \
 ```
 
 ### Python README-Level Showcase Specimen Generator
-* **Source Script:** [`docs/sdk/examples/python/readme_showcase_builder.py`](examples/python/readme_showcase_builder.py)
+* **Source Script:** [`docs/sdk/examples/python/e2e_showcase_example.py`](examples/python/e2e_showcase_example.py)
 * **Description:** Programmatically synthesizes the multi-page specimen document featuring all capabilities shown in the main `README.md` (Scripts of the World, vertical Japanese, two-column editorial flow with drop caps, interactive AcroForms, PKCS#7 signature blocks, APPROVED stamps, and threaded comment margin cards).
 * **Run from the command line:**
 ```bash
-# Generate 5-page PDF specimen and high-resolution page previews
-python3 docs/sdk/examples/python/readme_showcase_builder.py \
-  --output dist/readme_showcase_specimen.pdf \
+# Generate 5-page PDF specimen and high-resolution page previews in sample-docs/outputs/
+python3 docs/sdk/examples/python/e2e_showcase_example.py \
+  --output sample-docs/outputs/readme_showcase_specimen.pdf \
   --render-previews
 ```
 

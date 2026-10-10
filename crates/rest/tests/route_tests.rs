@@ -1,4 +1,13 @@
-//! HTTP Route and RFC 7807 Problem Details tests (Task 4.3).
+//! route_tests.rs — HTTP Route and RFC 7807 Problem Details tests.
+//! ====================================================================
+//!
+//! Purpose:
+//!     Verifies HTTP routing, synchronous vs asynchronous job lifecycles,
+//!     bearer authentication gates, and RFC 7807 problem details serialization.
+//!
+//! Layer:
+//!     Test Suite / REST Route Tests
+
 
 use std::sync::Arc;
 use std::time::Duration;

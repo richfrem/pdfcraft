@@ -1,4 +1,13 @@
-//! Semantic Parity Test Harness between LocalClient and RestClient (Task 4.4).
+//! parity_tests.rs — Semantic Parity Test Harness between LocalClient and RestClient.
+//! ===================================================================================
+//!
+//! Purpose:
+//!     Verifies 1:1 semantic parity between LocalClient (in-process) and RestClient (HTTP loopback)
+//!     ensuring identical output bytes, MIME types, page counts, and error semantics.
+//!
+//! Layer:
+//!     Test Suite / Integration Parity Tests
+
 
 use std::sync::Arc;
 

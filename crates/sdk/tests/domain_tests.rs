@@ -1,4 +1,13 @@
-//! Unit tests verifying Phase 1 Domain Models and Port Contracts.
+//! domain_tests.rs — Unit tests verifying SDK Domain Models and Port Contracts.
+//! ==============================================================================
+//!
+//! Purpose:
+//!     Verifies DocumentSource (Path & Bytes), DocumentResult (Memory & File),
+//!     MergeOptions, SplitMode, and OperationExecutor port delegation.
+//!
+//! Layer:
+//!     Test Suite / SDK Domain Tests
+
 
 use std::path::PathBuf;
 use std::sync::Arc;

@@ -1,11 +1,16 @@
-//! Phase 3 Invariant Tests: Enforcing system contracts, resource bounds, and failure containment.
+//! sdk_invariants.rs — Invariant Tests: Contracts, resource limits, and failure containment.
+//! =========================================================================================
 //!
-//! Verifies:
-//! - Test 1: Empty input rejection with SdkError::InvalidArgument
-//! - Test 2: Invalid page indexes (page 0 rejection) with SdkError::InvalidArgument
-//! - Test 3: Input exceeding max_request_bytes rejected with SdkError::QuotaExceeded
-//! - Test 4: Corrupted/garbage PDF data rejected gracefully with structured SdkError, no panic
-//! - Test 5: In-process memory execution without touching disk when small
+//! Purpose:
+//!     Verifies non-negotiable SDK invariants:
+//!     - Empty input rejection with SdkError::InvalidArgument
+//!     - Invalid page indexes (page 0 rejection) with SdkError::InvalidArgument
+//!     - Input exceeding max_request_bytes rejected with SdkError::QuotaExceeded
+//!     - Corrupted PDF data contained gracefully without panics
+//!     - In-process memory execution without disk I/O for small payloads
+//!
+//! Layer:
+//!     Test Suite / SDK Invariant Tests
 
 use pdfcraft_sdk::error::SdkError;
 use pdfcraft_sdk::types::{

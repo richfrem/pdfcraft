@@ -1,4 +1,13 @@
-//! Storage and state machine transition tests for `JobRepository` (Task 4.2).
+//! storage_tests.rs — Storage and state machine transition tests for JobRepository.
+//! ==================================================================================
+//!
+//! Purpose:
+//!     Verifies atomic CAS state transitions, terminal state immutability enforcement,
+//!     and file-journal crash recovery on disk.
+//!
+//! Layer:
+//!     Test Suite / REST Storage Tests
+
 
 use tempfile::tempdir;
 use pdfcraft_rest::models::{JobId, JobRecord, JobState};

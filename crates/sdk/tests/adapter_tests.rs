@@ -1,4 +1,13 @@
-//! Phase 2 Integration Tests: Engine Adapter, Panic Boundary, and Concrete Wire-up.
+//! adapter_tests.rs — Integration Tests for AutomationEngineAdapter and Panic Containment.
+//! =========================================================================================
+//!
+//! Purpose:
+//!     Verifies concrete AutomationEngineAdapter execution, ephemeral sandbox containment,
+//!     and catch_unwind panic protection against engine failures.
+//!
+//! Layer:
+//!     Test Suite / SDK Adapter Tests
+
 
 use std::sync::Arc;
 use pdfcraft_sdk::engine_adapter::AutomationEngineAdapter;

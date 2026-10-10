@@ -1,4 +1,13 @@
-//! Unit and concurrency tests for `BlockingExecutor` (Task 4.1).
+//! executor_tests.rs — Unit and concurrency tests for BlockingExecutor.
+//! =========================================================================
+//!
+//! Purpose:
+//!     Verifies bounded worker concurrency, queue wait timeouts under load,
+//!     and execution deadline enforcement.
+//!
+//! Layer:
+//!     Test Suite / REST Executor Tests
+
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;

@@ -22,26 +22,15 @@
 //!     - OperationCommand: Strongly typed document command for execution
 //!     - OperationExecutor: Abstract engine executor trait (execute_merge, execute_split, execute_render)
 
-use std::sync::Arc;
 use crate::error::SdkError;
 use crate::types::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, SplitMode, SplitResult};
 
 /// Strongly typed document command for execution by an engine adapter.
 #[derive(Debug)]
 pub enum OperationCommand {
-    Merge {
-        sources: Vec<DocumentSource>,
-        options: MergeOptions,
-    },
-    Split {
-        source: DocumentSource,
-        mode: SplitMode,
-    },
-    RenderPage {
-        source: DocumentSource,
-        page: usize,
-        options: RenderOptions,
-    },
+    Merge { sources: Vec<DocumentSource>, options: MergeOptions },
+    Split { source: DocumentSource, mode: SplitMode },
+    RenderPage { source: DocumentSource, page: usize, options: RenderOptions },
 }
 
 /// Abstract engine executor port.

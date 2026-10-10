@@ -29,11 +29,11 @@
 //!     - LocalClient::split: Splits PDF into separate files
 //!     - LocalClient::render_page: Renders page at physical DPI
 
-use std::sync::Arc;
+use crate::PdfCraftClient;
 use crate::error::SdkError;
 use crate::ports::OperationExecutor;
-use crate::types::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, SplitMode, SplitResult};
-use crate::PdfCraftClient;
+use crate::types::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, ResourceLimits, SplitMode, SplitResult};
+use std::sync::Arc;
 
 /// Local in-process client for running document transformations without an HTTP server.
 pub struct LocalClient {
@@ -44,10 +44,7 @@ pub struct LocalClient {
 impl LocalClient {
     /// Creates a new `LocalClient` with the provided engine executor implementation and custom limits.
     pub fn new(executor: Arc<dyn OperationExecutor>) -> Self {
-        Self {
-            executor,
-            limits: ResourceLimits::default(),
-        }
+        Self { executor, limits: ResourceLimits::default() }
     }
 
     /// Configures resource constraints on this client.
@@ -64,10 +61,7 @@ impl LocalClient {
 impl Default for LocalClient {
     fn default() -> Self {
         let limits = ResourceLimits::default();
-        Self {
-            executor: Arc::new(crate::engine_adapter::AutomationEngineAdapter::new(limits.max_memory_bytes)),
-            limits,
-        }
+        Self { executor: Arc::new(crate::engine_adapter::AutomationEngineAdapter::new(limits.max_memory_bytes)), limits }
     }
 }
 
@@ -77,26 +71,26 @@ impl PdfCraftClient for LocalClient {
             return Err(SdkError::InvalidArgument("files list cannot be empty".into()));
         }
         for file in files {
-            if let Some(len) = file.byte_len() {
-                if len > self.limits.max_request_bytes {
-                    return Err(SdkError::QuotaExceeded(format!(
-                        "File size ({len} bytes) exceeds configured max_request_bytes ({} bytes)",
-                        self.limits.max_request_bytes
-                    )));
-                }
+            if let Some(len) = file.byte_len()
+                && len > self.limits.max_request_bytes
+            {
+                return Err(SdkError::QuotaExceeded(format!(
+                    "File size ({len} bytes) exceeds configured max_request_bytes ({} bytes)",
+                    self.limits.max_request_bytes
+                )));
             }
         }
         self.executor.execute_merge(files, &options)
     }
 
     fn split(&self, file: &DocumentSource, mode: SplitMode) -> Result<SplitResult, SdkError> {
-        if let Some(len) = file.byte_len() {
-            if len > self.limits.max_request_bytes {
-                return Err(SdkError::QuotaExceeded(format!(
-                    "File size ({len} bytes) exceeds configured max_request_bytes ({} bytes)",
-                    self.limits.max_request_bytes
-                )));
-            }
+        if let Some(len) = file.byte_len()
+            && len > self.limits.max_request_bytes
+        {
+            return Err(SdkError::QuotaExceeded(format!(
+                "File size ({len} bytes) exceeds configured max_request_bytes ({} bytes)",
+                self.limits.max_request_bytes
+            )));
         }
         self.executor.execute_split(file, &mode)
     }

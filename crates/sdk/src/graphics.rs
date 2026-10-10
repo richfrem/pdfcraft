@@ -82,12 +82,7 @@ pub struct Quad {
 
 impl Quad {
     pub fn new(top_left: Point, top_right: Point, bottom_left: Point, bottom_right: Point) -> Self {
-        Self {
-            top_left,
-            top_right,
-            bottom_left,
-            bottom_right,
-        }
+        Self { top_left, top_right, bottom_left, bottom_right }
     }
 
     pub fn from_rect(rect: &Rect) -> Self {
@@ -118,39 +113,18 @@ impl Default for Matrix {
 }
 
 impl Matrix {
-    pub const IDENTITY: Self = Self {
-        a: 1.0,
-        b: 0.0,
-        c: 0.0,
-        d: 1.0,
-        tx: 0.0,
-        ty: 0.0,
-    };
+    pub const IDENTITY: Self = Self { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx: 0.0, ty: 0.0 };
 
     pub fn new(a: f64, b: f64, c: f64, d: f64, tx: f64, ty: f64) -> Self {
         Self { a, b, c, d, tx, ty }
     }
 
     pub fn translation(tx: f64, ty: f64) -> Self {
-        Self {
-            a: 1.0,
-            b: 0.0,
-            c: 0.0,
-            d: 1.0,
-            tx,
-            ty,
-        }
+        Self { a: 1.0, b: 0.0, c: 0.0, d: 1.0, tx, ty }
     }
 
     pub fn scale(sx: f64, sy: f64) -> Self {
-        Self {
-            a: sx,
-            b: 0.0,
-            c: 0.0,
-            d: sy,
-            tx: 0.0,
-            ty: 0.0,
-        }
+        Self { a: sx, b: 0.0, c: 0.0, d: sy, tx: 0.0, ty: 0.0 }
     }
 
     pub fn multiply(&self, rhs: &Self) -> Self {
@@ -165,10 +139,7 @@ impl Matrix {
     }
 
     pub fn transform_point(&self, p: Point) -> Point {
-        Point {
-            x: p.x * self.a + p.y * self.c + self.tx,
-            y: p.x * self.b + p.y * self.d + self.ty,
-        }
+        Point { x: p.x * self.a + p.y * self.c + self.tx, y: p.x * self.b + p.y * self.d + self.ty }
     }
 }
 
@@ -240,13 +211,7 @@ pub struct GraphicState {
 
 impl Default for GraphicState {
     fn default() -> Self {
-        Self {
-            stroke_color: Color::BLACK,
-            fill_color: Color::BLACK,
-            line_width: 1.0,
-            matrix: Matrix::IDENTITY,
-            blend_mode: BlendMode::Normal,
-        }
+        Self { stroke_color: Color::BLACK, fill_color: Color::BLACK, line_width: 1.0, matrix: Matrix::IDENTITY, blend_mode: BlendMode::Normal }
     }
 }
 
@@ -260,10 +225,6 @@ pub struct ExtendedGraphicState {
 
 impl Default for ExtendedGraphicState {
     fn default() -> Self {
-        Self {
-            alpha_stroke: 1.0,
-            alpha_fill: 1.0,
-            blend_mode: BlendMode::Normal,
-        }
+        Self { alpha_stroke: 1.0, alpha_fill: 1.0, blend_mode: BlendMode::Normal }
     }
 }

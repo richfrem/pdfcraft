@@ -66,15 +66,7 @@ pub struct SignDoc {
 
 impl SignDoc {
     pub fn new(cert_p12_bytes: Vec<u8>) -> Self {
-        Self {
-            cert_p12_bytes,
-            password: None,
-            signer_name: None,
-            reason: None,
-            location: None,
-            contact_info: None,
-            timestamp_server_url: None,
-        }
+        Self { cert_p12_bytes, password: None, signer_name: None, reason: None, location: None, contact_info: None, timestamp_server_url: None }
     }
 }
 

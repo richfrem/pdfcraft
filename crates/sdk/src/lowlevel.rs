@@ -13,8 +13,8 @@
 //!     - PDFDict / PDFArray / PDFStream: Composite COS data structures
 //!     - NameTree / NumberTree: Hierarchical indexing structures for PDF resources
 
-use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 /// Indirect object reference identifying an object in a PDF document.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -40,10 +40,7 @@ pub enum PDFObject {
     Name(String),
     Array(Vec<PDFObject>),
     Dict(BTreeMap<String, PDFObject>),
-    Stream {
-        dict: BTreeMap<String, PDFObject>,
-        data: Vec<u8>,
-    },
+    Stream { dict: BTreeMap<String, PDFObject>, data: Vec<u8> },
     Reference(PDFReference),
 }
 

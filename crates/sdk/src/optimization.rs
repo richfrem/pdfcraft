@@ -36,11 +36,7 @@ pub struct FlattenTransparencyParams {
 
 impl Default for FlattenTransparencyParams {
     fn default() -> Self {
-        Self {
-            line_art_and_text_resolution_dpi: 300.0,
-            raster_vector_balance: 100.0,
-            clip_complex_regions: true,
-        }
+        Self { line_art_and_text_resolution_dpi: 300.0, raster_vector_balance: 100.0, clip_complex_regions: true }
     }
 }
 

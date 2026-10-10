@@ -16,8 +16,8 @@
 //!     - ImageData: Raw byte container for pixel data
 //!     - Image: Image resource metadata and content
 
-use serde::{Deserialize, Serialize};
 use crate::graphics::{ColorSpace, Rect};
+use serde::{Deserialize, Serialize};
 
 /// Image raster file format encoding.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -52,13 +52,7 @@ pub struct DrawParams {
 
 impl Default for DrawParams {
     fn default() -> Self {
-        Self {
-            dpi: 150.0,
-            color_space: ColorSpace::DeviceRGB,
-            clip_box: None,
-            smooth_text: true,
-            smooth_images: true,
-        }
+        Self { dpi: 150.0, color_space: ColorSpace::DeviceRGB, clip_box: None, smooth_text: true, smooth_images: true }
     }
 }
 
@@ -72,11 +66,7 @@ pub struct PageImageParams {
 
 impl Default for PageImageParams {
     fn default() -> Self {
-        Self {
-            dpi: 150.0,
-            image_format: ImageFormat::Png,
-            clip_box: None,
-        }
+        Self { dpi: 150.0, image_format: ImageFormat::Png, clip_box: None }
     }
 }
 
@@ -90,11 +80,7 @@ pub struct ImageSaveParams {
 
 impl Default for ImageSaveParams {
     fn default() -> Self {
-        Self {
-            format: ImageFormat::Png,
-            quality: 90,
-            compress: true,
-        }
+        Self { format: ImageFormat::Png, quality: 90, compress: true }
     }
 }
 
@@ -117,13 +103,6 @@ pub struct Image {
 
 impl Image {
     pub fn new(width: usize, height: usize, format: ImageFormat, data: Vec<u8>) -> Self {
-        Self {
-            width,
-            height,
-            bits_per_component: 8,
-            color_space: ColorSpace::DeviceRGB,
-            format,
-            data,
-        }
+        Self { width, height, bits_per_component: 8, color_space: ColorSpace::DeviceRGB, format, data }
     }
 }

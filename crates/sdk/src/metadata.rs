@@ -13,8 +13,8 @@
 //!     - FileSpecification: Reference to external or embedded file asset
 //!     - WatermarkParams: Graphical and textual watermark overlay settings
 
-use serde::{Deserialize, Serialize};
 use crate::graphics::Color;
+use serde::{Deserialize, Serialize};
 
 /// Embedded file attachment embedded into a PDF document portfolio or catalog.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -29,13 +29,7 @@ pub struct FileAttachment {
 impl FileAttachment {
     pub fn new(file_name: impl Into<String>, data: Vec<u8>) -> Self {
         let size_bytes = data.len() as u64;
-        Self {
-            file_name: file_name.into(),
-            description: None,
-            mime_type: None,
-            size_bytes,
-            data,
-        }
+        Self { file_name: file_name.into(), description: None, mime_type: None, size_bytes, data }
     }
 }
 
@@ -59,13 +53,6 @@ pub struct WatermarkParams {
 
 impl Default for WatermarkParams {
     fn default() -> Self {
-        Self {
-            text: "CONFIDENTIAL".into(),
-            opacity: 0.5,
-            rotation_degrees: 45.0,
-            font_size: 48.0,
-            color: Color::RGB(0.5, 0.5, 0.5),
-            on_top: true,
-        }
+        Self { text: "CONFIDENTIAL".into(), opacity: 0.5, rotation_degrees: 45.0, font_size: 48.0, color: Color::RGB(0.5, 0.5, 0.5), on_top: true }
     }
 }

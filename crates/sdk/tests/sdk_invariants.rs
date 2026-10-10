@@ -13,9 +13,7 @@
 //!     Test Suite / SDK Invariant Tests
 
 use pdfcraft_sdk::error::SdkError;
-use pdfcraft_sdk::types::{
-    DocumentResult, DocumentSource, MergeOptions, RenderOptions, ResourceLimits, SplitMode,
-};
+use pdfcraft_sdk::types::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, ResourceLimits, SplitMode};
 use pdfcraft_sdk::{LocalClient, PdfCraftClient};
 
 fn sample_minimal_pdf() -> Vec<u8> {
@@ -27,7 +25,7 @@ fn test_invariant_empty_input_rejected() {
     let client = LocalClient::default();
     let res = client.merge(&[], MergeOptions::default());
     assert!(res.is_err(), "Empty sources array must be rejected");
-    match res.err().expect("error expected") {
+    match res.expect_err("error expected") {
         SdkError::InvalidArgument(msg) => {
             assert!(msg.contains("cannot be empty"));
         }
@@ -41,7 +39,7 @@ fn test_invariant_page_zero_rejected() {
     let src = DocumentSource::from_bytes(sample_minimal_pdf(), Some("doc.pdf".into()));
     let res = client.render_page(&src, 0, RenderOptions::default());
     assert!(res.is_err(), "Page 0 must be rejected");
-    match res.err().expect("error expected") {
+    match res.expect_err("error expected") {
         SdkError::InvalidArgument(msg) => {
             assert!(msg.contains("1-based"));
         }
@@ -52,11 +50,7 @@ fn test_invariant_page_zero_rejected() {
 #[test]
 fn test_invariant_oversized_input_rejected_before_execution() {
     // Set 1 KB max request limit
-    let limits = ResourceLimits {
-        max_request_bytes: 1024,
-        max_output_bytes: 10 * 1024 * 1024,
-        max_memory_bytes: 10 * 1024 * 1024,
-    };
+    let limits = ResourceLimits { max_request_bytes: 1024, max_output_bytes: 10 * 1024 * 1024, max_memory_bytes: 10 * 1024 * 1024 };
     let client = LocalClient::default().with_limits(limits);
 
     // Create a 2 KB source
@@ -65,7 +59,7 @@ fn test_invariant_oversized_input_rejected_before_execution() {
 
     let res = client.merge(&[source], MergeOptions::default());
     assert!(res.is_err(), "Oversized file must be rejected fast");
-    match res.err().expect("error expected") {
+    match res.expect_err("error expected") {
         SdkError::QuotaExceeded(msg) => {
             assert!(msg.contains("exceeds configured max_request_bytes"));
         }
@@ -82,7 +76,7 @@ fn test_invariant_corrupted_pdf_rejected_without_panic() {
     let res = client.split(&source, SplitMode::EveryNPages(1));
     assert!(res.is_err(), "Corrupted document must fail gracefully");
     // Crucial: Must produce a structured EngineError or EnginePanic, never abort process
-    match res.err().expect("error expected") {
+    match res.expect_err("error expected") {
         SdkError::EngineError(_) | SdkError::EnginePanic(_) => {
             // Contained failure verified
         }

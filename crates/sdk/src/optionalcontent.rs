@@ -25,11 +25,7 @@ pub struct OptionalContentGroup {
 
 impl OptionalContentGroup {
     pub fn new(name: impl Into<String>, is_visible: bool) -> Self {
-        Self {
-            name: name.into(),
-            is_visible,
-            intent: vec!["View".into(), "Design".into()],
-        }
+        Self { name: name.into(), is_visible, intent: vec!["View".into(), "Design".into()] }
     }
 }
 

@@ -16,8 +16,8 @@
 //!     - ChoiceField: Dropdown combo box or list selection widget
 //!     - SignatureField: Digital signature placeholder widget
 
-use serde::{Deserialize, Serialize};
 use crate::graphics::Rect;
+use serde::{Deserialize, Serialize};
 
 /// Form field export format types matching Datalogics AcroFormExportType.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]

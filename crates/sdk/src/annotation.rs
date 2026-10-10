@@ -23,9 +23,9 @@
 //!     - LinkAnnotation: Interactive link zone
 //!     - Redaction: Legal redaction box with overlay text and quads
 
-use serde::{Deserialize, Serialize};
 use crate::document::ViewDestination;
 use crate::graphics::{Color, Point, Quad, Rect};
+use serde::{Deserialize, Serialize};
 
 /// Polymorphic Action types that can be triggered by bookmarks, links, or document events.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -64,10 +64,7 @@ pub struct URIAction {
 
 impl URIAction {
     pub fn new(uri: impl Into<String>) -> Self {
-        Self {
-            uri: uri.into(),
-            is_map: false,
-        }
+        Self { uri: uri.into(), is_map: false }
     }
 }
 
@@ -80,10 +77,7 @@ pub struct LaunchAction {
 
 impl LaunchAction {
     pub fn new(file_path: impl Into<String>) -> Self {
-        Self {
-            file_path: file_path.into(),
-            new_window: true,
-        }
+        Self { file_path: file_path.into(), new_window: true }
     }
 }
 
@@ -97,11 +91,7 @@ pub struct RemoteGoToAction {
 
 impl RemoteGoToAction {
     pub fn new(file_path: impl Into<String>, destination: ViewDestination) -> Self {
-        Self {
-            file_path: file_path.into(),
-            destination,
-            new_window: true,
-        }
+        Self { file_path: file_path.into(), destination, new_window: true }
     }
 }
 
@@ -263,10 +253,7 @@ impl Annotation {
             author: None,
             color: None,
             opacity: 1.0,
-            flags: AnnotationFlags {
-                print: true,
-                ..Default::default()
-            },
+            flags: AnnotationFlags { print: true, ..Default::default() },
             action: None,
             subtype,
         }

@@ -72,6 +72,52 @@ class _ShapeElement:
     line_width: float = 1.0
 
 
+def measure_text_width(text: str, style: Style) -> float:
+    """Estimates the advance width of a string in points using standard PDF font metrics."""
+    is_bold = "bold" in style.font_name.lower()
+    is_mono = "courier" in style.font_name.lower()
+    w = 0.0
+    for ch in text:
+        if is_mono:
+            w += style.font_size * 0.60
+        elif ch == " ":
+            w += style.font_size * 0.28
+        elif ch in "il.,:;!\'|[]/\\":
+            w += style.font_size * (0.30 if is_bold else 0.25)
+        elif ch.isupper() or ch in "mwMW@#%&":
+            w += style.font_size * (0.75 if is_bold else 0.68)
+        else:
+            w += style.font_size * (0.56 if is_bold else 0.50)
+    return w
+
+
+def wrap_text_to_width(text: str, max_width: float, style: Style) -> List[str]:
+    """Wraps text into lines that fit within max_width points."""
+    lines: List[str] = []
+    for paragraph in text.splitlines():
+        if not paragraph.strip():
+            lines.append("")
+            continue
+        words = paragraph.split(" ")
+        cur_line = ""
+        for word in words:
+            if not word:
+                continue
+            test_line = f"{cur_line} {word}" if cur_line else word
+            if measure_text_width(test_line, style) <= max_width:
+                cur_line = test_line
+            else:
+                if cur_line:
+                    lines.append(cur_line)
+                    cur_line = word
+                else:
+                    lines.append(word)
+                    cur_line = ""
+        if cur_line:
+            lines.append(cur_line)
+    return lines
+
+
 class DocumentSession:
     """High-level in-process document editing session adhering to APDFL patterns."""
 
@@ -213,18 +259,31 @@ class DocumentSession:
         comment: str,
         rect: Rect,
     ) -> None:
-        """Places a threaded comment annotation card on the margin."""
+        """Places a threaded comment annotation card on the margin with wrapped body text."""
         # Card background & border
-        self.add_rect(page_number, rect, fill_color=Color.rgb(0.98, 0.98, 0.99), stroke_color=Color.rgb(0.78, 0.82, 0.88), line_width=1.0)
+        self.add_rect(
+            page_number,
+            rect,
+            fill_color=Color.rgb(0.98, 0.98, 0.99),
+            stroke_color=Color.rgb(0.78, 0.82, 0.88),
+            line_width=1.0,
+        )
         # Author header banner
-        header_rect = Rect(rect.x, rect.y + rect.height - 20.0, rect.width, 20.0)
+        header_height = 20.0
+        header_rect = Rect(rect.x, rect.y + rect.height - header_height, rect.width, header_height)
         self.add_rect(page_number, header_rect, fill_color=Color.rgb(0.90, 0.93, 0.97))
         # Author name
         auth_style = Style(font_name="Helvetica-Bold", font_size=9.0, color=Color.rgb(0.15, 0.25, 0.45))
         self.add_text(page_number, author, rect.x + 8.0, rect.y + rect.height - 14.0, auth_style)
-        # Comment message
+        # Comment message wrapped within body bounds
+        body_rect = Rect(
+            rect.x + 6.0,
+            rect.y + 4.0,
+            rect.width - 12.0,
+            rect.height - header_height - 6.0,
+        )
         body_style = Style(font_name="Helvetica", font_size=8.5, color=Color.rgb(0.20, 0.22, 0.25))
-        self.add_text(page_number, comment, rect.x + 8.0, rect.y + rect.height - 35.0, body_style)
+        self.add_text_box(page_number, comment, body_rect, body_style, padding=2.0, line_spacing=1.25)
 
     def add_form_field_view(
         self,
@@ -266,6 +325,36 @@ class DocumentSession:
         st = style or Style(font_name="Helvetica", font_size=12.0, color=Color.black())
         elem = _TextElement(text=text, x=x, y=y, style=st)
         self._text_elements[page_number].append(elem)
+
+    def add_text_box(
+        self,
+        page_number: int,
+        text: str,
+        rect: Rect,
+        style: Optional[Style] = None,
+        padding: float = 4.0,
+        line_spacing: float = 1.25,
+    ) -> List[str]:
+        """Places word-wrapped text within a bounding rectangle."""
+        if page_number < 1 or page_number > len(self._pages):
+            raise InvalidArgumentError(f"Page index {page_number} out of bounds (1..{len(self._pages)})")
+
+        st = style or Style(font_name="Helvetica", font_size=10.0, color=Color.black())
+        avail_width = max(10.0, rect.width - 2.0 * padding)
+        wrapped_lines = wrap_text_to_width(text, avail_width, st)
+
+        line_height = st.font_size * line_spacing
+        cur_y = rect.y + rect.height - padding - st.font_size
+        placed_lines: List[str] = []
+
+        for line in wrapped_lines:
+            if cur_y < rect.y + padding:
+                break
+            self.add_text(page_number, line, rect.x + padding, cur_y, st)
+            placed_lines.append(line)
+            cur_y -= line_height
+
+        return placed_lines
 
     def add_styled_line(
         self,

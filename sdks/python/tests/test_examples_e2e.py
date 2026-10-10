@@ -22,7 +22,7 @@ for p in (SDK_PYTHON_DIR, EXAMPLES_DIR):
 
 from ocr_document_to_markdown import process_pdf_document  # type: ignore
 from pypdf import PdfReader
-from readme_showcase_builder import build_readme_showcase_document  # type: ignore
+from e2e_showcase_example import build_readme_showcase_document  # type: ignore
 
 
 class TestExamplesEndToEnd(unittest.TestCase):
@@ -33,7 +33,7 @@ class TestExamplesEndToEnd(unittest.TestCase):
         cls.test_output_dir = Path("dist/test_examples")
         cls.test_output_dir.mkdir(parents=True, exist_ok=True)
 
-    def test_readme_showcase_builder(self) -> None:
+    def test_e2e_showcase_example(self) -> None:
         """Verifies programmatic construction of the 5-page README showcase PDF."""
         out_pdf = self.test_output_dir / "test_readme_specimen.pdf"
         session = build_readme_showcase_document(out_pdf)

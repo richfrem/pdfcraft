@@ -17,7 +17,7 @@ from pdfcraft.errors import (
 )
 from pdfcraft.local import LocalClient
 from pdfcraft.rest import RestClient
-from pdfcraft.session import DocumentSession
+from pdfcraft.session import DocumentSession, measure_text_width, wrap_text_to_width
 from pdfcraft.types import (
     Action,
     AcroFormExportType,
@@ -85,6 +85,7 @@ __all__ = [
     "InvalidArgumentError",
     "LocalClient",
     "Matrix",
+    "measure_text_width",
     "MergeOptions",
     "NotFoundError",
     "OptimizationParams",
@@ -111,4 +112,5 @@ __all__ = [
     "ViewDestination",
     "Word",
     "WordFinderConfig",
+    "wrap_text_to_width",
 ]

@@ -32,6 +32,7 @@
 //!     - ExecutionSandbox::materialize_source: Writes DocumentSource to disk if needed
 //!     - ExecutionSandbox::collect_output: Collects output and spills to disk if exceeding max_memory_bytes
 
+use std::cell::RefCell;
 use std::fs;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
@@ -40,32 +41,55 @@ use tempfile::TempDir;
 
 use crate::error::SdkError;
 use crate::ports::OperationExecutor;
-use crate::types::{
-    DocumentResult, DocumentSource, ImageFormat, MergeOptions, RenderOptions, SplitMode, SplitResult,
-};
-use pdfcraft_automation::Automation;
-use serde_json::{json, Value};
+use crate::types::{DocumentResult, DocumentSource, ImageFormat, MergeOptions, RenderOptions, SplitMode, SplitResult};
+use pdfcraft_automation::{Automation, Content};
+use serde_json::{Value, json};
+
+/// Structured JSON payload of a tool result, if it is one.
+fn json_of(c: &Content) -> Option<&Value> {
+    match c {
+        Content::Json(v) => Some(v),
+        Content::Png { .. } => None,
+    }
+}
+
+/// PNG bytes of a tool result, if it is an image.
+fn png_of(c: &Content) -> Option<Vec<u8>> {
+    match c {
+        Content::Png { data, .. } => Some(data.clone()),
+        Content::Json(_) => None,
+    }
+}
 
 static COUNTER: AtomicU64 = AtomicU64::new(1);
 
 /// Execution sandbox managing ephemeral disk isolation and cleanup.
+///
+/// The directory is deleted on drop unless [`ExecutionSandbox::persist`] is called, which is
+/// required when a result (a spilled `DocumentResult::File`, split parts) must outlive the call.
 pub struct ExecutionSandbox {
-    temp_dir: TempDir,
+    temp_dir: RefCell<Option<TempDir>>,
     root: PathBuf,
 }
 
 impl ExecutionSandbox {
     pub fn new() -> Result<Self, SdkError> {
-        let temp_dir = tempfile::Builder::new()
-            .prefix("pdfcraft-sandbox-")
-            .tempdir()
-            .map_err(SdkError::Io)?;
+        let temp_dir = tempfile::Builder::new().prefix("pdfcraft-sandbox-").tempdir().map_err(SdkError::Io)?;
         let root = temp_dir.path().to_path_buf();
-        Ok(Self { temp_dir, root })
+        Ok(Self { temp_dir: RefCell::new(Some(temp_dir)), root })
     }
 
     pub fn root(&self) -> &Path {
         &self.root
+    }
+
+    /// Stops the sandbox directory from being deleted on drop; the caller then owns its contents.
+    pub fn persist(&self) {
+        if let Ok(mut slot) = self.temp_dir.try_borrow_mut()
+            && let Some(dir) = slot.take()
+        {
+            let _ = dir.keep();
+        }
     }
 
     /// Materializes a `DocumentSource` into the sandbox, returning its relative filename.
@@ -73,9 +97,7 @@ impl ExecutionSandbox {
         match source {
             DocumentSource::Path(p) => {
                 if !p.exists() {
-                    return Err(SdkError::FileNotFound {
-                        path: p.display().to_string(),
-                    });
+                    return Err(SdkError::FileNotFound { path: p.display().to_string() });
                 }
                 let ext = p.extension().and_then(|e| e.to_str()).unwrap_or("pdf");
                 let file_name = format!("input_{index}.{ext}");
@@ -116,9 +138,8 @@ impl AutomationEngineAdapter {
     where
         F: FnOnce(&mut Automation) -> Result<R, SdkError>,
     {
-        let mut automation = Automation::new()
-            .with_root(sandbox.root())
-            .map_err(|e| SdkError::EngineError(format!("Failed to configure automation root: {e}")))?;
+        let mut automation =
+            Automation::new().with_root(sandbox.root()).map_err(|e| SdkError::EngineError(format!("Failed to configure automation root: {e}")))?;
 
         let result = catch_unwind(AssertUnwindSafe(|| f(&mut automation)));
 
@@ -163,14 +184,14 @@ impl OperationExecutor for AutomationEngineAdapter {
                 "out": out_name,
             });
 
-            automation.call("doc_combine", &args)
-                .map_err(|e| SdkError::EngineError(format!("Merge failed: {e}")))?;
+            automation.call("doc_combine", &args).map_err(|e| SdkError::EngineError(format!("Merge failed: {e}")))?;
 
             let out_path = sandbox.root().join(&out_name);
             let metadata = fs::metadata(&out_path).map_err(SdkError::Io)?;
             let size = metadata.len();
 
             if size > self.max_memory_bytes {
+                sandbox.persist(); // the file must outlive this call
                 Ok(DocumentResult::file(out_path, "application/pdf", size))
             } else {
                 let bytes = fs::read(&out_path).map_err(SdkError::Io)?;
@@ -184,11 +205,13 @@ impl OperationExecutor for AutomationEngineAdapter {
         let file_name = sandbox.materialize_source(source, 0)?;
 
         self.with_automation(&sandbox, |automation| {
-            let open_res = automation.call("doc_open", &json!({ "path": file_name }))
+            let open_res = automation
+                .call("doc_open", &json!({ "path": file_name }))
                 .map_err(|e| SdkError::EngineError(format!("Failed to open document: {e}")))?;
 
-            let doc_id = open_res.first()
-                .and_then(|c| c.as_json())
+            let doc_id = open_res
+                .first()
+                .and_then(json_of)
                 .and_then(|v| v.get("doc"))
                 .and_then(Value::as_i64)
                 .ok_or_else(|| SdkError::EngineError("Invalid doc id returned".into()))?;
@@ -206,15 +229,25 @@ impl OperationExecutor for AutomationEngineAdapter {
                 SplitMode::MaxFileSizeMb(mb) => split_args["max_mb"] = json!(mb),
             }
 
-            let res = automation.call("doc_split", &split_args)
-                .map_err(|e| SdkError::EngineError(format!("Split failed: {e}")))?;
+            let res = automation.call("doc_split", &split_args).map_err(|e| SdkError::EngineError(format!("Split failed: {e}")))?;
 
-            let raw_files = res.first()
-                .and_then(|c| c.as_json())
+            let raw_files = res
+                .first()
+                .and_then(json_of)
                 .and_then(|v| v.get("files"))
                 .and_then(Value::as_array)
-                .map(|arr| arr.iter().filter_map(|v| v.as_str().map(PathBuf::from)).collect())
+                .map(|arr| {
+                    arr.iter()
+                        // doc_split reports each part as { path, first_page, last_page }.
+                        .filter_map(|v| v.as_str().or_else(|| v.get("path").and_then(Value::as_str)))
+                        .map(|f| {
+                            let p = PathBuf::from(f);
+                            if p.is_absolute() { p } else { sandbox.root().join(p) }
+                        })
+                        .collect::<Vec<PathBuf>>()
+                })
                 .unwrap_or_default();
+            sandbox.persist(); // split parts must outlive this call
 
             Ok(SplitResult { files: raw_files })
         })
@@ -225,31 +258,37 @@ impl OperationExecutor for AutomationEngineAdapter {
             return Err(SdkError::InvalidArgument("Page number must be 1-based".into()));
         }
 
+        // The engine's `page_render` only produces PNG; never label PNG bytes as another format.
+        if options.format != ImageFormat::Png {
+            return Err(SdkError::UnsupportedOperation(format!("render format {:?} (the engine renders PNG only)", options.format)));
+        }
+
         let sandbox = ExecutionSandbox::new()?;
         let file_name = sandbox.materialize_source(source, 0)?;
 
         self.with_automation(&sandbox, |automation| {
             // Strictly compute DPI without coupling to monitor display PPI (#739)
+            let open_res = automation
+                .call("doc_open", &json!({ "path": file_name }))
+                .map_err(|e| SdkError::EngineError(format!("Failed to open document: {e}")))?;
+            let doc_id = open_res
+                .first()
+                .and_then(json_of)
+                .and_then(|v| v.get("doc"))
+                .and_then(Value::as_i64)
+                .ok_or_else(|| SdkError::EngineError("Invalid doc id returned".into()))?;
+
             let args = json!({
-                "path": file_name,
+                "doc": doc_id,
                 "page": page,
                 "dpi": options.dpi,
             });
 
-            let res = automation.call("page_render", &args)
-                .map_err(|e| SdkError::EngineError(format!("Render failed: {e}")))?;
+            let res = automation.call("page_render", &args).map_err(|e| SdkError::EngineError(format!("Render failed: {e}")))?;
 
-            let img_bytes = res.first()
-                .and_then(|c| c.as_bytes())
-                .map(|b| b.to_vec())
-                .ok_or_else(|| SdkError::EngineError("Render produced no image bytes".into()))?;
+            let img_bytes = res.first().and_then(png_of).ok_or_else(|| SdkError::EngineError("Render produced no image bytes".into()))?;
 
-            let mime = match options.format {
-                ImageFormat::Png => "image/png",
-                ImageFormat::Jpeg => "image/jpeg",
-            };
-
-            Ok(DocumentResult::memory(img_bytes, mime))
+            Ok(DocumentResult::memory(img_bytes, "image/png"))
         })
     }
 }

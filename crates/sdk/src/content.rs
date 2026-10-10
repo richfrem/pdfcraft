@@ -16,27 +16,17 @@
 //!     - Element: Polymorphic graphic element enum
 //!     - Content: High-level page content stream representation
 
-use serde::{Deserialize, Serialize};
 use crate::graphics::{Matrix, Point, Rect};
+use serde::{Deserialize, Serialize};
 
 /// Path drawing and segment operators.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum Segment {
     MoveTo(Point),
     LineTo(Point),
-    CurveTo {
-        control_point1: Point,
-        control_point2: Point,
-        endpoint: Point,
-    },
-    CurveToV {
-        control_point2: Point,
-        endpoint: Point,
-    },
-    CurveToY {
-        control_point1: Point,
-        endpoint: Point,
-    },
+    CurveTo { control_point1: Point, control_point2: Point, endpoint: Point },
+    CurveToV { control_point2: Point, endpoint: Point },
+    CurveToY { control_point1: Point, endpoint: Point },
     ClosePath,
     RectSegment(Rect),
 }
@@ -64,11 +54,7 @@ impl Path {
     }
 
     pub fn curve_to(&mut self, cp1: Point, cp2: Point, endpoint: Point) {
-        self.segments.push(Segment::CurveTo {
-            control_point1: cp1,
-            control_point2: cp2,
-            endpoint,
-        });
+        self.segments.push(Segment::CurveTo { control_point1: cp1, control_point2: cp2, endpoint });
     }
 
     pub fn close(&mut self) {

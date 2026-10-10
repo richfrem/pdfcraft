@@ -8,8 +8,6 @@
 //! Layer:
 //!     Test Suite / SDK Adapter Tests
 
-
-use std::sync::Arc;
 use pdfcraft_sdk::engine_adapter::AutomationEngineAdapter;
 use pdfcraft_sdk::error::SdkError;
 use pdfcraft_sdk::ports::OperationExecutor;
@@ -28,7 +26,7 @@ fn test_merge_missing_source_fails_with_file_not_found() {
     let res = adapter.execute_merge(&sources, &MergeOptions::default());
 
     assert!(res.is_err());
-    match res.err().expect("error expected") {
+    match res.expect_err("error expected") {
         SdkError::FileNotFound { path } => {
             assert!(path.contains("nonexistent_doc.pdf"));
         }
@@ -65,7 +63,7 @@ fn test_render_page_zero_rejected() {
     let res = client.render_page(&src, 0, RenderOptions::default());
 
     assert!(res.is_err());
-    match res.err().expect("error expected") {
+    match res.expect_err("error expected") {
         SdkError::InvalidArgument(msg) => {
             assert!(msg.contains("1-based"));
         }
@@ -90,6 +88,32 @@ fn test_large_output_spills_to_file_backed_result() {
             DocumentResult::Memory { .. } => {
                 panic!("Output should have spilled to DocumentResult::File due to 100 byte limit");
             }
+        }
+    }
+}
+
+#[test]
+fn test_render_non_png_format_is_unsupported() {
+    // Regression: PNG bytes used to be labelled `image/jpeg` when Jpeg was requested.
+    let client = LocalClient::default();
+    let src = DocumentSource::from_bytes(minimal_valid_pdf(), Some("doc.pdf".into()));
+    let opts = RenderOptions { format: pdfcraft_sdk::ImageFormat::Jpeg, ..Default::default() };
+    match client.render_page(&src, 1, opts) {
+        Err(SdkError::UnsupportedOperation(msg)) => assert!(msg.contains("PNG")),
+        other => panic!("Expected UnsupportedOperation, got {other:?}"),
+    }
+}
+
+#[test]
+fn test_split_parts_outlive_the_call() {
+    // Regression: the sandbox directory was deleted on return, leaving dangling split paths.
+    let adapter = AutomationEngineAdapter::default();
+    let src = DocumentSource::from_bytes(minimal_valid_pdf(), Some("doc.pdf".into()));
+    if let Ok(res) = adapter.execute_split(&src, &SplitMode::EveryNPages(1)) {
+        // Regression: parts are reported as objects ({path, ...}); they were parsed as strings -> 0 files.
+        assert!(!res.files.is_empty(), "split reported no files");
+        for f in &res.files {
+            assert!(f.exists(), "split part {} should still exist", f.display());
         }
     }
 }

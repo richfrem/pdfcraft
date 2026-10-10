@@ -8,15 +8,12 @@
 //! Layer:
 //!     Test Suite / SDK Domain Tests
 
-
-use std::path::PathBuf;
-use std::sync::Arc;
 use pdfcraft_sdk::error::SdkError;
 use pdfcraft_sdk::ports::OperationExecutor;
-use pdfcraft_sdk::types::{
-    DocumentResult, DocumentSource, MergeOptions, RenderOptions, SplitMode, SplitResult,
-};
+use pdfcraft_sdk::types::{DocumentResult, DocumentSource, MergeOptions, RenderOptions, SplitMode, SplitResult};
 use pdfcraft_sdk::{LocalClient, PdfCraftClient};
+use std::path::PathBuf;
+use std::sync::Arc;
 
 /// Test fake executor for contract verification.
 struct FakeExecutor;
@@ -30,9 +27,7 @@ impl OperationExecutor for FakeExecutor {
     }
 
     fn execute_split(&self, _source: &DocumentSource, _mode: &SplitMode) -> Result<SplitResult, SdkError> {
-        Ok(SplitResult {
-            files: vec![PathBuf::from("part_1.pdf"), PathBuf::from("part_2.pdf")],
-        })
+        Ok(SplitResult { files: vec![PathBuf::from("part_1.pdf"), PathBuf::from("part_2.pdf")] })
     }
 
     fn execute_render(&self, _source: &DocumentSource, page: usize, _options: &RenderOptions) -> Result<DocumentResult, SdkError> {
@@ -130,20 +125,12 @@ fn test_apdfl_action_and_goto_action_domain_model() {
 
 #[test]
 fn test_apdfl_annotations_and_redaction() {
-    use pdfcraft_sdk::annotation::{
-        Annotation, AnnotationSubtype, HighlightAnnotation, LineAnnotation, LineEnding, Redaction, RedactionStatus,
-    };
+    use pdfcraft_sdk::annotation::{Annotation, AnnotationSubtype, HighlightAnnotation, LineAnnotation, LineEnding, Redaction, RedactionStatus};
     use pdfcraft_sdk::graphics::{Color, Point, Quad, Rect};
 
     let rect = Rect::new(50.0, 100.0, 200.0, 50.0);
     let quads = vec![Quad::from_rect(&rect)];
-    let annot = Annotation::new(
-        rect,
-        AnnotationSubtype::Highlight(HighlightAnnotation {
-            quads,
-            color: Color::RGB(1.0, 1.0, 0.0),
-        }),
-    );
+    let annot = Annotation::new(rect, AnnotationSubtype::Highlight(HighlightAnnotation { quads, color: Color::RGB(1.0, 1.0, 0.0) }));
     assert!(annot.flags.print);
     assert_eq!(annot.opacity, 1.0);
 
@@ -167,8 +154,8 @@ fn test_apdfl_annotations_and_redaction() {
 
 #[test]
 fn test_apdfl_content_elements_and_graphics() {
-    use pdfcraft_sdk::content::{Element, Path, Segment};
-    use pdfcraft_sdk::graphics::{Matrix, Point, Rect};
+    use pdfcraft_sdk::content::{Path, Segment};
+    use pdfcraft_sdk::graphics::{Matrix, Point};
 
     let mut path = Path::new();
     path.move_to(Point::new(0.0, 0.0));
@@ -184,7 +171,9 @@ fn test_apdfl_content_elements_and_graphics() {
     let m2 = Matrix::scale(2.0, 2.0);
     let combined = m1.multiply(&m2);
     let pt = combined.transform_point(Point::new(10.0, 10.0));
-    assert_eq!(pt, Point::new(70.0, 70.0));
+    // PDF row-vector convention: `a.multiply(b)` applies `a` first, then `b`
+    // (translate (10,10) by (50,50) -> (60,60), then scale x2 -> (120,120)).
+    assert_eq!(pt, Point::new(120.0, 120.0));
 }
 
 #[test]
@@ -206,7 +195,7 @@ fn test_apdfl_forms_and_data_exchange() {
 fn test_apdfl_security_optimization_lowlevel() {
     use pdfcraft_sdk::lowlevel::{NameTree, PDFObject};
     use pdfcraft_sdk::optimization::{OptimizationParams, PDFOptimizer};
-    use pdfcraft_sdk::security::{EncryptionType, PermissionsFlags, SignDoc};
+    use pdfcraft_sdk::security::{PermissionsFlags, SignDoc};
 
     // Security
     let perms = PermissionsFlags::default();
@@ -226,4 +215,3 @@ fn test_apdfl_security_optimization_lowlevel() {
     tree.insert("Dest1", PDFObject::Integer(42));
     assert_eq!(tree.lookup("Dest1"), Some(&PDFObject::Integer(42)));
 }
-

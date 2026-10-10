@@ -28,8 +28,8 @@
 //!     - RenderOptions: Options for rendering pages (dpi, image format)
 //!     - ResourceLimits: Safety resource quota limits (max request bytes, max memory, max pages)
 
-use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 /// Input abstraction decoupling operations from raw filesystem paths.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -37,18 +37,12 @@ pub enum DocumentSource {
     /// A path to a local PDF file.
     Path(PathBuf),
     /// In-memory PDF bytes with an optional virtual filename.
-    Bytes {
-        data: Vec<u8>,
-        name: Option<String>,
-    },
+    Bytes { data: Vec<u8>, name: Option<String> },
 }
 
 impl DocumentSource {
     pub fn from_bytes(data: impl Into<Vec<u8>>, name: Option<String>) -> Self {
-        Self::Bytes {
-            data: data.into(),
-            name,
-        }
+        Self::Bytes { data: data.into(), name }
     }
 
     pub fn from_path(path: impl Into<PathBuf>) -> Self {
@@ -86,32 +80,18 @@ impl From<Vec<u8>> for DocumentSource {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DocumentResult {
     /// In-memory result for smaller transformations.
-    Memory {
-        data: Vec<u8>,
-        mime_type: String,
-    },
+    Memory { data: Vec<u8>, mime_type: String },
     /// Spilled or file-backed result for large documents.
-    File {
-        path: PathBuf,
-        mime_type: String,
-        size_bytes: u64,
-    },
+    File { path: PathBuf, mime_type: String, size_bytes: u64 },
 }
 
 impl DocumentResult {
     pub fn memory(data: Vec<u8>, mime_type: impl Into<String>) -> Self {
-        Self::Memory {
-            data,
-            mime_type: mime_type.into(),
-        }
+        Self::Memory { data, mime_type: mime_type.into() }
     }
 
     pub fn file(path: PathBuf, mime_type: impl Into<String>, size_bytes: u64) -> Self {
-        Self::File {
-            path,
-            mime_type: mime_type.into(),
-            size_bytes,
-        }
+        Self::File { path, mime_type: mime_type.into(), size_bytes }
     }
 
     pub fn mime_type(&self) -> &str {
@@ -163,10 +143,7 @@ pub struct RenderOptions {
 
 impl Default for RenderOptions {
     fn default() -> Self {
-        Self {
-            dpi: 150.0,
-            format: ImageFormat::Png,
-        }
+        Self { dpi: 150.0, format: ImageFormat::Png }
     }
 }
 

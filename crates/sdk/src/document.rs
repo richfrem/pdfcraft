@@ -17,8 +17,8 @@
 //!     - PageRange: Numerical subsets of pages
 //!     - PageLabel: Visual page numbering labeling schemes
 
-use serde::{Deserialize, Serialize};
 use crate::graphics::Rect;
+use serde::{Deserialize, Serialize};
 
 /// Fit modes for document view destinations.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -45,21 +45,11 @@ pub struct ViewDestination {
 
 impl ViewDestination {
     pub fn new(page_number: usize, fit_mode: FitMode) -> Self {
-        Self {
-            page_number,
-            fit_mode,
-            zoom: None,
-            rect: None,
-        }
+        Self { page_number, fit_mode, zoom: None, rect: None }
     }
 
     pub fn xyz(page_number: usize, zoom: Option<f64>) -> Self {
-        Self {
-            page_number,
-            fit_mode: FitMode::XYZ,
-            zoom,
-            rect: None,
-        }
+        Self { page_number, fit_mode: FitMode::XYZ, zoom, rect: None }
     }
 }
 
@@ -76,14 +66,7 @@ pub struct Bookmark {
 
 impl Bookmark {
     pub fn new(title: impl Into<String>) -> Self {
-        Self {
-            title: title.into(),
-            destination: None,
-            children: Vec::new(),
-            is_open: true,
-            bold: false,
-            italic: false,
-        }
+        Self { title: title.into(), destination: None, children: Vec::new(), is_open: true, bold: false, italic: false }
     }
 
     pub fn with_destination(mut self, dest: ViewDestination) -> Self {
@@ -127,21 +110,11 @@ pub struct PageRange {
 
 impl PageRange {
     pub fn all(num_pages: usize) -> Self {
-        Self {
-            start_page: 1,
-            end_page: num_pages,
-            even_only: false,
-            odd_only: false,
-        }
+        Self { start_page: 1, end_page: num_pages, even_only: false, odd_only: false }
     }
 
     pub fn range(start_page: usize, end_page: usize) -> Self {
-        Self {
-            start_page,
-            end_page,
-            even_only: false,
-            odd_only: false,
-        }
+        Self { start_page, end_page, even_only: false, odd_only: false }
     }
 }
 
@@ -156,12 +129,7 @@ pub struct Page {
 
 impl Page {
     pub fn new(page_number: usize, media_box: Rect) -> Self {
-        Self {
-            page_number,
-            crop_box: media_box,
-            media_box,
-            rotation_degrees: 0,
-        }
+        Self { page_number, crop_box: media_box, media_box, rotation_degrees: 0 }
     }
 
     pub fn width(&self) -> f64 {
@@ -185,12 +153,6 @@ pub struct Document {
 
 impl Document {
     pub fn new(num_pages: usize) -> Self {
-        Self {
-            num_pages,
-            version: "1.7".into(),
-            is_encrypted: false,
-            linearized: false,
-            bookmarks: Vec::new(),
-        }
+        Self { num_pages, version: "1.7".into(), is_encrypted: false, linearized: false, bookmarks: Vec::new() }
     }
 }

@@ -54,34 +54,24 @@ pub use engine_adapter::AutomationEngineAdapter;
 pub use error::SdkError;
 pub use local::LocalClient;
 pub use ports::OperationExecutor;
-pub use types::{
-    DocumentResult, DocumentSource, ImageFormat, MergeOptions, RenderOptions, ResourceLimits, SplitMode, SplitResult,
-};
+pub use types::{DocumentResult, DocumentSource, ImageFormat, MergeOptions, RenderOptions, ResourceLimits, SplitMode, SplitResult};
 
 /// Re-exported canonical domain models matching Datalogics APDFL taxonomy.
 pub use annotation::{
-    Action, Annotation, AnnotationFlags, AnnotationSubtype, CircleAnnotation, FreeTextAnnotation,
-    GoToAction, HighlightAnnotation, InkAnnotation, LaunchAction, LineAnnotation, LineEnding,
-    LinkAnnotation, PolyLineAnnotation, PolygonAnnotation, Redaction, RedactionStatus,
-    RemoteGoToAction, SquareAnnotation, URIAction, UnderlineAnnotation,
+    Action, Annotation, AnnotationFlags, AnnotationSubtype, CircleAnnotation, FreeTextAnnotation, GoToAction, HighlightAnnotation, InkAnnotation,
+    LaunchAction, LineAnnotation, LineEnding, LinkAnnotation, PolyLineAnnotation, PolygonAnnotation, Redaction, RedactionStatus, RemoteGoToAction,
+    SquareAnnotation, URIAction, UnderlineAnnotation,
 };
 pub use content::{Clip, Container, Content, Element, Form, Group, Path, Segment};
 pub use document::{Bookmark, Document, FitMode, Page, PageLabel, PageLabelStyle, PageRange, ViewDestination};
-pub use forms::{
-    AcroFormExportType, AcroFormImportType, ButtonField, ChoiceField, Field, FieldType, SignatureField, TextField,
-};
-pub use graphics::{
-    BlendMode, Color, ColorSpace, ExtendedGraphicState, GraphicState, Matrix, Point, Quad, Rect,
-};
+pub use forms::{AcroFormExportType, AcroFormImportType, ButtonField, ChoiceField, Field, FieldType, SignatureField, TextField};
+pub use graphics::{BlendMode, Color, ColorSpace, ExtendedGraphicState, GraphicState, Matrix, Point, Quad, Rect};
 pub use image::{DrawParams, ImageData, ImageSaveParams, PageImageParams};
 pub use lowlevel::{NameTree, NumberTree, PDFObject, PDFReference};
 pub use metadata::{FileAttachment, FileSpecification, WatermarkParams};
 pub use optimization::{CompressionType, FlattenTransparencyParams, OptimizationParams, PDFOptimizer};
 pub use security::{DigitalSignature, EncryptionType, PermissionsFlags, SignDoc};
-pub use text::{
-    DocTextFinderConfig, DocTextFinderMatch, Font, Style, StyleTransition, Text, TextRun, TextState, Word,
-    WordFinderConfig,
-};
+pub use text::{DocTextFinderConfig, DocTextFinderMatch, Font, Style, StyleTransition, Text, TextRun, TextState, Word, WordFinderConfig};
 
 /// Unified document processing client trait shared across in-process and remote transports.
 pub trait PdfCraftClient {

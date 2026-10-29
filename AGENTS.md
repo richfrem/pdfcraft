@@ -121,6 +121,36 @@ PdfCraft opens files from strangers, and people trust it with their work. A malf
 
 Follow `CLAUDE.md`. It covers quality gates, layering, commit rules and how to run and look at the app.
 
+## 6. Document Processing SDK, REST API & Multi-Language Bindings (Protected Fork Extensions)
+
+This repository maintains the unified Document Processing SDK, self-hosted REST service, multi-language bindings, and SDK architecture documentation originally authored for upstream issue `#872` (RFC `storytold/pdfcraft#875`, PR `storytold/pdfcraft#919`, immutable tag `archive/upstream-pr-919` at commit `25029a73`). Because upstream has not merged those PRs, these components are maintained directly on `main` alongside `upstream/main` and **must never be removed, overwritten, or dropped** when syncing with upstream.
+
+### 6.1 Protected paths and wiring
+
+Never delete or revert any of the following paths during upstream merges, rebases, or cleanups:
+- **Rust SDK crate (`L7`):** `crates/sdk/` (`pdfcraft-sdk` — in-process client, domain models, and automation engine adapter)
+- **REST API service & client (`L7`):** `crates/rest/` (`pdfcraft-rest` — self-hostable HTTP/REST service, job storage, RFC 7807 problem responses, and client)
+- **Language SDKs & OpenAPI contract:**
+  - `sdks/python/` (`pdfcraft-pyo3` native PyO3 extension + `pdfcraft` Python package and test suite)
+  - `sdks/typescript/` (`@pdfcraft/sdk` TypeScript/Node client and test suite)
+  - `sdks/openapi.json`, `sdks/check_contract_drift.py`, and `sdks/README.md`
+- **Documentation & runnable examples:**
+  - `docs/sdk/` (`README.md`, `api-reference.md`, `control-planes.md`, `control-planes.mmd`, `parity-roadmap.md`, and `docs/sdk/examples/` for Rust, Python, and TypeScript)
+  - `docs/sdk.md` and `docs/sdk-api-reference.md`
+- **Workspace integration:**
+  - `Cargo.toml`: keep `"sdks/python"` in `[workspace].members` and keep `pdfcraft-sdk` and `pdfcraft-rest` in `[workspace.dependencies]` at the current `[workspace.package].version`.
+  - `xtask/src/layers.rs`: keep `pdfcraft-sdk` (`L7`), `pdfcraft-rest` (`L7`), and `pdfcraft-pyo3` (`exempt`) registered in the dependency layering table.
+
+### 6.2 Upstream sync procedure
+
+When pulling new changes from `upstream/main`:
+1. Merge `upstream/main` into `main` (`git fetch upstream && git merge upstream/main`) — never `git reset --hard upstream/main`.
+2. If upstream bumps `[workspace.package].version` in `Cargo.toml`, update `pdfcraft-sdk` and `pdfcraft-rest` in `[workspace.dependencies]` to match.
+3. Verify layering and tests before pushing:
+   - `cargo run -p xtask -- layers`
+   - `cargo test -p pdfcraft-sdk -p pdfcraft-rest`
+   - `python3 sdks/check_contract_drift.py`
+
 ## Contributor credits (About window)
 
 - About ▸ Contributors/Models are compiled into the binary from `contributors/contributors.json`

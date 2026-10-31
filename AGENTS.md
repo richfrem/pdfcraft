@@ -199,6 +199,26 @@ git commit -m "chore(sync): merge upstream/main into main preserving SDK and RES
 git push origin main
 ```
 
+### 6.3 Building and Publishing SDK Distribution Packages (Python Wheels & Releases)
+
+When preparing binary packages or publishing releases of the native Python SDK (`pdfcraft-pyo3` / `pdfcraft`):
+1. **Prerequisites**: Ensure `maturin >= 1.5` is available (`pip install maturin`).
+2. **Wheel Compilation**:
+   ```bash
+   cd sdks/python
+   maturin build --release --out ../../target/wheels
+   ```
+   This compiles the native PyO3 Rust extension and outputs self-contained `.whl` packages in `target/wheels/` with zero runtime compilation required for downstream Python consumers.
+3. **Publishing to GitHub Releases**:
+   Attach the compiled wheel(s) to the release tag using GitHub CLI:
+   ```bash
+   gh release create <version-tag> target/wheels/*.whl \
+     --repo richfrem/pdfcraft \
+     --title "<version-tag>: Unified Document Processing SDK & Python Wheels" \
+     --notes "Release containing pre-built native Python SDK wheels."
+   ```
+4. **Detailed Reference**: See [`RELEASE_SDK.md`](RELEASE_SDK.md) for full cross-platform instructions and downstream consumption options.
+
 ## Contributor credits (About window)
 
 - About ▸ Contributors/Models are compiled into the binary from `contributors/contributors.json`

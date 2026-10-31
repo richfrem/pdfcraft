@@ -49,8 +49,7 @@ type Res<T> = Result<T, Box<dyn Error>>;
 mod pdf {
     use super::{
         Action, Annotation, AnnotationSubtype, BlendMode, Bookmark, Color, ExtendedGraphicState, Field, FieldType, Font, GoToAction,
-        HighlightAnnotation, InkAnnotation, LineAnnotation, LineEnding, LinkAnnotation, Matrix, Path, Quad, Rect, Res, Segment, TextRun,
-        URIAction,
+        HighlightAnnotation, InkAnnotation, LineAnnotation, LineEnding, LinkAnnotation, Matrix, Path, Quad, Rect, Res, Segment, TextRun, URIAction,
     };
     use std::fmt::Write as _;
 

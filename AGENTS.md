@@ -123,11 +123,11 @@ Follow `CLAUDE.md`. It covers quality gates, layering, commit rules and how to r
 
 ## 6. Document Processing SDK, REST API & Multi-Language Bindings (Protected Fork Extensions)
 
-This repository maintains the unified Document Processing SDK, self-hosted REST service, multi-language bindings, and SDK architecture documentation originally authored for upstream issue `#872` (RFC `storytold/pdfcraft#875`, PR `storytold/pdfcraft#919`, immutable tag `archive/upstream-pr-919` at commit `25029a73`). Because upstream has not merged those PRs, these components are maintained directly on `main` alongside `upstream/main` and **must never be removed, overwritten, or dropped** when syncing with upstream.
+This repository maintains the unified Document Processing SDK, self-hosted REST service, multi-language bindings, and SDK architecture documentation originally authored for upstream issue `#872` (RFC `storytold/pdfcraft#875`, PR `storytold/pdfcraft#919`, immutable tag `archive/upstream-pr-919` at commit `25029a73`). Because upstream has not yet merged those PRs, these components are maintained directly on `main` alongside `upstream/main` and **must never be removed, overwritten, or dropped** when syncing with upstream.
 
 ### 6.1 Protected paths and wiring
 
-Never delete or revert any of the following paths during upstream merges, rebases, or cleanups:
+Never delete, revert, or overwrite any of the following paths during upstream merges, rebases, or cleanups:
 - **Rust SDK crate (`L7`):** `crates/sdk/` (`pdfcraft-sdk` — in-process client, domain models, and automation engine adapter)
 - **REST API service & client (`L7`):** `crates/rest/` (`pdfcraft-rest` — self-hostable HTTP/REST service, job storage, RFC 7807 problem responses, and client)
 - **Language SDKs & OpenAPI contract:**
@@ -137,19 +137,68 @@ Never delete or revert any of the following paths during upstream merges, rebase
 - **Documentation & runnable examples:**
   - `docs/sdk/` (`README.md`, `api-reference.md`, `control-planes.md`, `control-planes.mmd`, `parity-roadmap.md`, and `docs/sdk/examples/` for Rust, Python, and TypeScript)
   - `docs/sdk.md` and `docs/sdk-api-reference.md`
+  - Fork guide in `README.md` (`## ⚡ Fork Overview: Enterprise SDK & REST API`)
 - **Workspace integration:**
   - `Cargo.toml`: keep `"sdks/python"` in `[workspace].members` and keep `pdfcraft-sdk` and `pdfcraft-rest` in `[workspace.dependencies]` at the current `[workspace.package].version`.
-  - `xtask/src/layers.rs`: keep `pdfcraft-sdk` (`L7`), `pdfcraft-rest` (`L7`), and `pdfcraft-pyo3` (`exempt`) registered in the dependency layering table.
+  - `xtask/src/layers.rs`: keep `pdfcraft-sdk` (`L7`), `pdfcraft-rest` (`L7`), and `pdfcraft-pyo3` (`exempt`) registered in `TABLE`, and keep `("sdk", "automation")`, `("rest", "sdk")`, and `("rest", "automation")` in `SIDEWAYS`.
 
-### 6.2 Upstream sync procedure
+### 6.2 Upstream sync procedure (Step-by-Step)
 
-When pulling new changes from `upstream/main`:
-1. Merge `upstream/main` into `main` (`git fetch upstream && git merge upstream/main`) — never `git reset --hard upstream/main`.
-2. If upstream bumps `[workspace.package].version` in `Cargo.toml`, update `pdfcraft-sdk` and `pdfcraft-rest` in `[workspace.dependencies]` to match.
-3. Verify layering and tests before pushing:
-   - `cargo run -p xtask -- layers`
-   - `cargo test -p pdfcraft-sdk -p pdfcraft-rest`
-   - `python3 sdks/check_contract_drift.py`
+When pulling new changes from `upstream/main`, follow this exact workflow:
+
+#### Step 1: Pre-Sync Check
+Ensure the local working tree is clean and you are on `main`:
+```bash
+git checkout main
+git status
+```
+
+#### Step 2: Fetch Latest Upstream
+Fetch all new branches, tags, and commits from upstream:
+```bash
+git fetch upstream
+```
+
+#### Step 3: Merge Upstream into Main
+Execute a standard 3-way merge into `main` (never `git reset --hard upstream/main` and never `git rebase upstream/main`):
+```bash
+git merge upstream/main
+```
+
+#### Step 4: Resolve Any Merge Conflicts While Preserving Fork Extensions
+If git pauses due to conflicts, resolve them according to these rules:
+1. **`Cargo.toml`:**
+   - Retain `"sdks/python"` inside `[workspace].members`.
+   - If upstream bumped `[workspace.package].version` (e.g. to `0.16.1`), update `pdfcraft-sdk` and `pdfcraft-rest` under `[workspace.dependencies]` to match that exact same version.
+   - Retain `pdfcraft-sdk` and `pdfcraft-rest` entries under `[workspace.dependencies]`.
+2. **`.gitignore`:**
+   - Retain both upstream ignore rules and the local agent configuration directories (`/.agents/`, `/.claude/`, `/.gemini/`).
+3. **`xtask/src/layers.rs`:**
+   - Ensure the registrations for `sdk`, `rest`, and `pyo3` in `TABLE` and `SIDEWAYS` remain present.
+4. **Never accept upstream deletions of `crates/sdk`, `crates/rest`, `sdks/`, or `docs/sdk/`.**
+
+#### Step 5: Run Verification Gates
+Before committing or pushing the merge, all of the following verification commands **must pass**:
+```bash
+# 1. Verify architectural layering compliance (fails if SDK or REST violates L7 rules)
+cargo run -p xtask -- layers
+
+# 2. Run all unit and integration tests across the protected SDK and REST crates
+cargo test -p pdfcraft-sdk -p pdfcraft-rest
+
+# 3. Verify cross-language OpenAPI / SDK contract integrity (Python, TypeScript, Rust)
+python3 sdks/check_contract_drift.py
+
+# 4. Check for compiler or clippy warnings in the protected crates
+cargo clippy -p pdfcraft-sdk -p pdfcraft-rest --all-targets -- -D warnings
+```
+
+#### Step 6: Commit and Push
+Once verification succeeds, finalize the merge commit and push to your fork's origin:
+```bash
+git commit -m "chore(sync): merge upstream/main into main preserving SDK and REST extensions"
+git push origin main
+```
 
 ## Contributor credits (About window)
 

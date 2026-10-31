@@ -26,9 +26,13 @@ plan/
 # Local diagnostic and test scripts
 /scripts/
 
-# Python cache
+# Python cache and compiled native modules
 __pycache__/
 *.pyc
+*.so
+*.pyd
+*.dylib
+*.dll
 
 # Local-only reference material derived from third-party (Datalogics/Adobe PDF Library) docs; never commit
 /parity/apdfl-*

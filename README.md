@@ -8,6 +8,10 @@
 </p>
 
 
+<p align="center">
+  <img src="assets/app-icon/hicolor/256x256/apps/ai.storyteller.pdfcraft.png" width="128" height="128" alt="PdfCraft icon: an engraved lion on a red tile">
+</p>
+
 <h1 align="center">PdfCraft</h1>
 
 <p align="center">
@@ -17,10 +21,13 @@
 </p>
 
 <p align="center">
-  <img alt="License: MIT OR Apache-2.0" src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-12a58a">
-  <img alt="Written in Rust" src="https://img.shields.io/badge/written%20in-Rust-0a7563">
-  <img alt="Platforms: macOS, Windows, Linux, FreeBSD, web" src="https://img.shields.io/badge/runs%20on-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux%20%C2%B7%20FreeBSD%20%C2%B7%20web-12a58a">
-  <img alt="No account, no telemetry" src="https://img.shields.io/badge/no%20account-no%20telemetry-0a7563">
+  <img alt="License: MIT OR Apache-2.0" src="https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-b70228?style=flat-square">
+  <img alt="Written in Rust" src="https://img.shields.io/badge/written%20in-Rust-8a011e?style=flat-square">
+  <img alt="Platforms: macOS, Windows, Linux, FreeBSD, web" src="https://img.shields.io/badge/runs%20on-macOS%20%C2%B7%20Windows%20%C2%B7%20Linux%20%C2%B7%20FreeBSD%20%C2%B7%20web-b70228?style=flat-square">
+  <img alt="No account, no telemetry" src="https://img.shields.io/badge/no%20account-no%20telemetry-8a011e?style=flat-square">
+  <br>
+  <a href="https://sonarcloud.io/project/overview?id=storytold_pdfcraft"><img alt="Scanned by SonarCloud" src="https://img.shields.io/badge/Scanned_by-SonarCloud-4b9fd5?style=flat-square&logo=sonarqubecloud&logoColor=white"></a>
+  <a href="https://coderabbit.ai"><img alt="Reviewed by CodeRabbit" src="https://img.shields.io/coderabbit/prs/github/storytold/pdfcraft?style=flat-square&label=Reviewed%20by%20CodeRabbit&logo=coderabbit"></a>
 </p>
 
 <p align="center">
@@ -46,6 +53,7 @@
 > games &mdash; if you make things, you're one of us. **[Come say hi on Discord](https://discord.gg/artcraft).**
 
 <p align="center">
+  <a href="#fork-overview-enterprise-sdk--rest-api"><b>⚡ Fork: SDK & REST API</b></a> ·
   <a href="#highlights">Highlights</a> ·
   <a href="#read-anything-beautifully">Read</a> ·
   <a href="#find-it-select-it-copy-it">Find</a> ·
@@ -61,6 +69,166 @@
   <a href="#downloads">Downloads</a> ·
   <a href="#the-crafting-apps">Crafting Apps</a>
 </p>
+
+---
+
+## ⚡ Fork Overview: Enterprise SDK & REST API
+
+> [!IMPORTANT]
+> **Executive Overview: What This Fork Adds to PdfCraft ([PR #919](https://github.com/storytold/pdfcraft/pull/919), RFC [#875](https://github.com/storytold/pdfcraft/issues/875), Tag `archive/upstream-pr-919`)**
+> 
+> Upstream [`storytold/pdfcraft`](https://github.com/storytold/pdfcraft) is designed as a desktop PDF reader/editor and interactive CLI. This fork introduces the headless application & programmatic developer plane for PdfCraft:
+> - **[`crates/sdk`](crates/sdk/) (`pdfcraft-sdk`):** High-performance, in-process Rust SDK and C-ABI/FFI bindings (open-source alternative to Adobe PDF Library / Datalogics APDFL).
+> - **[`crates/rest`](crates/rest/) (`pdfcraft-rest`):** Production-ready, RFC 7807-compliant HTTP REST microservice with job queueing, bounded concurrency, bearer auth, and file-spillover handling.
+> - **[`sdks/python`](sdks/python/) (`pdfcraft`):** Native PyO3 and HTTP Python SDK supporting typed document manipulation, AcroForms, bookmarks, annotations, redaction, security, and rendering.
+> - **[`sdks/typescript`](sdks/typescript/) (`@pdfcraft/sdk`):** Native N-API and HTTP client for Node.js / TypeScript backends.
+> - **Architectural Hardening:** Independent Staff Architect audits via OpenAI Codex `gpt-6-astra` verifying Hexagonal / Ports-and-Adapters boundaries and zero panics.
+
+### 🏛️ PdfCraft Ecosystem Architecture
+
+```text
+┌────────────────────────────────────────────────────────────────────────────────┐
+│                       PDFCRAFT ECOSYSTEM ARCHITECTURE                          │
+├───────────────────────────────────────────────────┬────────────────────────────┤
+│           INTERACTIVE & AI CONTROL PLANES         │    PROGRAMMATIC PLANES     │
+├─────────────────────────┬─────────────────────────┼──────────────┬─────────────┤
+│      Desktop UI         │        MCP Server       │   REST API   │ Embedded SDK│
+│    (egui / Native)      │  (JSON-RPC over stdio)  │ (HTTP / JSON)│ (Rust/PyO3) │
+│                         │                         │              │             │
+│   • Visual editing      │   • Agent discovery     │ • Microserv. │ • Max perf  │
+│   • Human-in-the-loop   │   • LLM tool calls      │ • Async jobs │ • Zero net  │
+│   • Adobe Acrobat UI    │   • Anthropic / Claude  │ • Cross-lang │ • C-ABI / FFI│
+└────────────┬────────────┴────────────┬────────────┴───────┬──────┴──────┬──────┘
+             │                         │                    │             │
+             ▼                         ▼                    │             │
+  ┌───────────────────────────────────────────────┐         │             │
+  │     pdfcraft_automation (Headless Tools)      │         │             │
+  │  123 tools: Organize, Forms, Annotate, Render │         │             │
+  └───────────────────────┬───────────────────────┘         │             │
+                          │                                 │             │
+                          │        ┌────────────────────────┴─────────────┘
+                          ▼        ▼
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │                 pdfcraft_sdk::ports::OperationExecutor                       │
+  │                  (Hexagonal Ports & Adapters Boundary)                       │
+  └───────────────────────────────┬──────────────────────────────────────────────┘
+                                  ▼
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │                           pdfcraft Core Engine                               │
+  │  (hayro, pdfcraft_render, pdfcraft_flatten, pdfcraft_sign, pdfcraft_forms)   │
+  └──────────────────────────────────────────────────────────────────────────────┘
+```
+
+> 📊 **Detailed Interactive Diagram:** See [docs/sdk/control-planes.md](docs/sdk/control-planes.md) and [docs/sdk/control-planes.mmd](docs/sdk/control-planes.mmd) for the complete multi-layer Mermaid execution topology.
+
+---
+
+### ⚖️ Why Both MCP and SDK / REST?
+
+| Dimension | MCP Server (`pdfcraft-cli mcp`) | SDK / REST (`pdfcraft-sdk` / `pdfcraft-rest`) |
+| :--- | :--- | :--- |
+| **Target User** | LLMs, Agentic Copilots (Claude, ChatGPT, Antigravity) | Backend engineers, pipeline automation, enterprise microservices |
+| **Transport** | JSON-RPC 2.0 over standard I/O (`stdio`) | Direct C-ABI / in-process call or HTTP/REST (JSON + binary streams) |
+| **State Model** | Session-bound (`doc_open` -> ID -> operations) | Ephemeral RAII sandboxes or bounded async job IDs |
+| **Performance** | IPC latency acceptable for cognitive agent workflows | High-throughput batch processing (>1,000 pages/sec in-process) |
+| **Integration** | Cursor, Windsurf, Claude Desktop, Antigravity | Python scripts, web services, Kubernetes workers, cloud lambdas |
+
+---
+
+### 🛡️ Architectural Hardening & Astra Audit Summary
+
+The implementation was developed with iterative adversarial reviews and direct implementation passes by Staff Technical Architect persona `gpt-6-astra` (OpenAI Codex), advancing from an initial 5/10 to **8/10**:
+
+| Architectural Dimension | Score | Hardening Applied |
+| :--- | :---: | :--- |
+| **Security & Containment** | **8/10** | REST completely rejects server-local filesystem paths (`SourcePayload::Path` -> HTTP 400); split materialization enforces strict path component validation, rejecting traversal (`..`), slashes, null bytes, and sandbox escapes. Local SDK paths remain fully supported. |
+| **Resource Governance** | **7/10** | Bounded streaming copy with 1-byte lookahead probe; aggregate input quotas covering auxiliary files (certificates, forms); split response payload aggregate ceiling (100 MiB); bookmark pagination node budget (max 5,000 nodes total). |
+| **Correctness & Failure Semantics** | **8/10** | Fail-closed split delivery (no 0-byte corrupt results); strictly advancing pagination offsets (`next > offset`); non-side-effecting `HttpBody` cursor preservation across comparisons. |
+| **Separation of Concerns** | **8/10** | Hexagonal architecture (`OperationExecutor` port decoupled from `AutomationEngineAdapter`), enabling mock execution without engine binaries. |
+| **Test Quality** | **8/10** | Mutation tests confirming negative checks fail when guards are disabled; 71 Rust tests + 18 Python tests. |
+
+---
+
+### 🧩 Key Features & APDFL Feature Parity
+
+- **Organize Pages:** Rotate, Extract, Delete, Insert with physical page index bounds.
+- **Bookmarks:** Hierarchical outline extraction and mutation with continuation pagination and depth bounds.
+- **Annotations:** Highlight, Underline, Stamp, and Sticky Notes.
+- **AcroForms:** Field inspection, value mutation, form flattening, and FDF/XFDF/JSON data exchange.
+- **Security & Digital Signatures:** PKCS#12 signing with fail-closed key material purging; password encryption and decryption.
+- **Physical Rendering:** Decoupled physical print DPI calculation from display PPI.
+- **Generic Automation Bridge:** `execute_call_tool` and `execute_batch` supporting all 123 automation tools in ephemeral sandboxes.
+
+---
+
+### 🚀 Quick Start with the Fork Components
+
+#### 1. In-Process Rust SDK (`crates/sdk`)
+Add `pdfcraft-sdk` to your `Cargo.toml`:
+```rust
+use pdfcraft_sdk::{DocumentSource, LocalPdfClient, PdfClient};
+
+// Zero-overhead in-process execution over the automation engine
+let client = LocalPdfClient::new()?;
+let merged = client.merge(vec![
+    DocumentSource::from_path("chapter1.pdf")?,
+    DocumentSource::from_path("chapter2.pdf")?,
+])?;
+std::fs::write("merged_book.pdf", merged.into_bytes()?)?;
+```
+
+#### 2. Self-Hosted REST Microservice (`crates/rest`)
+Run the headless REST server locally or in a container:
+```bash
+# Launch the daemon on port 8080
+cargo run -p pdfcraft-rest -- --port 8080 --auth-token "your-secret-token"
+
+# Submit a merge request
+curl -X POST http://localhost:8080/v1/merged-pdf \
+  -H "Authorization: Bearer your-secret-token" \
+  -H "Content-Type: application/json" \
+  -d '{"sources": [{"path": "a.pdf"}, {"path": "b.pdf"}]}' \
+  --output combined.pdf
+```
+
+#### 3. Python SDK (`sdks/python`)
+```python
+from pdfcraft import PdfClient, DocumentSource
+
+# Works against the local REST daemon or embedded native engine
+client = PdfClient(base_url="http://localhost:8080", token="your-secret-token")
+doc = client.merge([
+    DocumentSource.from_path("input1.pdf"),
+    DocumentSource.from_path("input2.pdf"),
+])
+doc.save("output.pdf")
+```
+
+#### 4. TypeScript / Node.js SDK (`sdks/typescript`)
+```typescript
+import { PdfCraftClient } from "@pdfcraft/sdk";
+
+const client = new PdfCraftClient({
+  baseUrl: "http://localhost:8080",
+  token: "your-secret-token",
+});
+
+const merged = await client.mergeDocuments(["invoice1.pdf", "invoice2.pdf"]);
+await merged.saveToFile("invoices.pdf");
+```
+
+---
+
+### 📚 Documentation & Reference Links
+
+- **[Multi-Language SDK Overview](sdks/README.md)**: Package matrix and quick-start tutorials.
+- **[Comprehensive SDK Architecture Guide](docs/sdk/README.md)**: Concurrency models, safety barriers, and deployment patterns.
+- **[Domain-by-Domain API Reference](docs/sdk/api-reference.md)**: Full API parameters, schemas, and signatures.
+- **[Control Planes & Architecture Diagram](docs/sdk/control-planes.md)**: Interactive Mermaid topology and control plane comparisons.
+- **[Runnable Code Examples](docs/sdk/examples/)**: Production-ready scripts in Rust, Python, and TypeScript.
+- **[Rust SDK Crate](crates/sdk/README.md)**: `pdfcraft-sdk` internal crate documentation.
+- **[REST Service Crate](crates/rest/README.md)**: `pdfcraft-rest` internal microservice crate documentation.
+- **[SDK Quick Guide Link](docs/sdk.md)** and **[API Reference Quick Link](docs/sdk-api-reference.md)**: Top-level documentation portals.
 
 ---
 
@@ -136,6 +304,8 @@ Search the whole document as you type, step through matches with <kbd>⌘G</kbd>
 Right-click a PDF tab to close it, reopen the last closed file-backed tab, or reveal its file. Closing still asks about unsaved changes. Reopening reads the saved file from disk; it does not restore discarded edits. Reveal selects the file in Explorer or Finder. On Linux and FreeBSD it requests `org.freedesktop.FileManager1.ShowItems`, falling back to opening the containing directory with `xdg-open` when that service is unavailable. Reopen and Reveal are unavailable on the web; Reveal is also unavailable for pathless documents.
 
 Bookmarks, page thumbnails and the document's own page labels (i, ii, 1, 2…) keep you oriented in long documents. Search bookmark titles in the Bookmarks panel to find nested entries even when their parents are collapsed. Matches keep their ancestors for context; Clear restores the unfiltered tree without changing its expansion state.
+
+In **Inspector > Pages**, use **Thumbnail size** and the smaller/larger buttons to show more pages or inspect larger previews (50–150%). This changes only the thumbnails, keeping multi-page selection and the current page in view. The size belongs to the open document view and survives reloading its file; it is not remembered after restarting. Agents can set it with `ui.set {"key":"thumbnail-zoom","value":"75"}` and read `active.thumbnail_zoom` from `ui.state`.
 
 <table>
 <tr>
@@ -323,15 +493,13 @@ pdfcraft-cli ui --control ~/.pdfcraft-control.json inspect focused=true
 pdfcraft-cli ui --control ~/.pdfcraft-control.json quit
 ```
 
-`ui.dock` arranges the `tools` and `inspector` panels; `canvas` is the protected document view.
-Each per-panel request requires a `panel` ID and an `operation`: `open`, `close`,
-`activate`, `float` with `rect: [x, y, width, height]`, or `move` with `target` and
-`zone: center|left|right|top|bottom`. For example,
-`{"operation":"float","panel":"tools","rect":[100,100,320,440]}` floats Tools.
-`ui.dock.reset` restores the default
-arrangement. The control channel accepts these methods directly; `ui.command` also accepts
-`{"id":"ui.dock","params":{...}}`. Saved preferences retain groups, active tabs, visibility
-and floating geometry. Invalid requests return an error without changing the document or layout.
+`ui.panel` opens, closes or sizes a side panel: `{"panel":"tools"|"side","open":true|false,"width":320}`.
+`tools` is the Tools panel and `side` the panel the rail opens (reopening it shows the one open last).
+`width` is clamped to the panel's limits (Tools 240–520, side panel 260–520 points). `ui.dock.reset`
+resets the side panels: Tools open on the left, default widths. The control channel accepts these
+methods directly; `ui.command` also accepts `{"id":"ui.panel","params":{...}}`. Saved preferences keep
+the Tools side, the open panels and their widths. Invalid requests return an error without changing
+the document or the panels.
 
 
 `resize` requests a native inner-window size in logical points (each dimension must be between 320 and 8192); the window manager may constrain it. `state` reports the observed `window.width`, `window.height` and `window.pixels_per_point`. `focus` accepts exactly one widget `id` or unique enabled, focusable `label`; subsequent `key` requests traverse or activate the actual widgets. `inspect` includes focusability and accepts a `focused` filter. `quit` takes no parameters: clean documents exit normally, while unsaved edits or typing open the existing Save/Don't save/Cancel prompt and return `quitting: false, needs_confirmation: true`. It never silently discards work. Window resizing and application quit are native-only.
@@ -454,11 +622,13 @@ The portable zip runs from any folder, a USB stick included. Its `portable.txt` 
 logs and crash recovery in a `PdfCraftData` folder next to `pdfcraft.exe`, so nothing is written to
 `%APPDATA%`; delete that file to use the normal per-user folders.
 
-The MSI installs for all users and requires administrator privileges. It adds "Edit with PdfCraft"
+The MSI installs for your account only by default, without administrator privileges. Choose
+"Everyone on this computer" on its first page, or pass `ALLUSERS=1` from an elevated terminal, to install
+for all users. It adds "Edit with PdfCraft"
 to the right-click menu of PDF files and "Create PDF with PdfCraft…" to the right-click menu of
 images (.png .jpg .jpeg .tif .tiff .gif .bmp .jp2 .j2k .jpx) in File Explorer (on Windows 11, under
 "Show more options"), without changing which app opens them by default. For unattended deployment
-without a desktop shortcut, run from an elevated terminal:
+without a desktop shortcut (add `ALLUSERS=1`, from an elevated terminal, for an all-users install):
 
 ```powershell
 msiexec /i "pdfcraft-<ver>-windows-x64.msi" /qn /norestart INSTALLDESKTOPSHORTCUT=0
@@ -466,7 +636,7 @@ msiexec /i "pdfcraft-<ver>-windows-x64.msi" /qn /norestart INSTALLDESKTOPSHORTCU
 
 | Property | `=0` leaves out |
 |---|---|
-| `INSTALLDESKTOPSHORTCUT` | the all-users desktop shortcut |
+| `INSTALLDESKTOPSHORTCUT` | the desktop shortcut |
 | `INSTALLPDFCONTEXTMENU` | "Edit with PdfCraft" on PDF files |
 | `INSTALLIMAGECONTEXTMENU` | "Create PDF with PdfCraft…" on images |
 
@@ -588,13 +758,4 @@ Forks and modified versions must remove them.
   <sub>Made by the <a href="https://getartcraft.com/">ArtCraft</a> team and community.</sub>
 </p>
 
-Tools and Inspector panels can be dragged into tab groups, split beside the PDF, or floated within the app window. Read and full-screen modes keep their existing focused document view. Drag a panel header to a target edge or another header. Its context menu offers Float panel, Move to group, and Close panel. Existing panel toggles reopen panels at their saved location; Reset Panel Layout restores the app layout. Floating panels remain inside the current app window.
-
-Advanced `ui.dock` operations use the same validated transaction as pointer gestures:
-`moveFloating` updates `rect`, `resizeSplit` accepts a boolean child `path` and
-`size` (`{"Ratio":0.5}`, `{"FixedFirst":280}`, or `{"FixedSecond":280}`),
-`setStackOpen` takes `open`, and `resizeStack` takes a point `height` or null.
-A center `move` can include `before` (panel ID or null to append) for tab order.
-The equivalent `{"action": ...}` form accepts a serialized shared docking action;
-this is also the form emitted by the renderer. Protected-canvas and app-specific panel
-rules apply equally to both forms.
+The Tools panel sits on the left, or on the right with Preferences ▸ Tools panel side. The rail stays at the right edge and opens one side panel beside it. Drag a panel's inner edge to resize it; widths are remembered. F4 shows or hides the side panel and Shift+F4 the Tools panel (also in the View menu); View ▸ Reset side panels restores the default arrangement.

@@ -160,7 +160,21 @@ npm test
 
 ---
 
-## 🧪 6. Verification and Testing
+## 📦 6. Consuming in External Repositories
+
+To use PdfCraft programmatically inside other repositories and projects:
+
+| Language / Platform | Dependency Declaration / Installation Command |
+| :--- | :--- |
+| **Rust (`Cargo.toml`)** | `pdfcraft-sdk = { git = "https://github.com/richfrem/pdfcraft.git", branch = "main" }` |
+| **Python (`pip`)** | `pip install "git+https://github.com/richfrem/pdfcraft.git#subdirectory=sdks/python"` |
+| **TypeScript / Node (`npm`)** | `npm install "github:richfrem/pdfcraft#subdirectory=sdks/typescript"` |
+| **REST Microservice** | Launch daemon: `cargo run -p pdfcraft-rest -- --port 8080 --auth-token "your-token"` |
+| **Other Languages (Go, C#, Java)** | Generate typed client from [`sdks/openapi.json`](sdks/openapi.json) via `openapi-generator-cli` |
+
+---
+
+## 🧪 7. Verification and Testing
 
 Run test suites across components:
 ```bash

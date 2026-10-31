@@ -13,6 +13,8 @@ plan/
 # Agent skills, configuration, and lockfiles
 /.agents/
 /.agent/
+/.claude/
+/.gemini/
 /plugin-sources.json
 /skills-lock.json
 

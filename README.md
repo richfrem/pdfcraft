@@ -136,17 +136,15 @@
 
 ---
 
-### 🛡️ Architectural Hardening & Astra Audit Summary
+### 🛡️ Enterprise Security & Hardening Guarantees
 
-The implementation was developed with iterative adversarial reviews and direct implementation passes by Staff Technical Architect persona `gpt-6-astra` (OpenAI Codex), advancing from an initial 5/10 to **8/10**:
+The SDK and REST microservice are engineered with strict defense-in-depth safety barriers, sandbox containment, and resource governance:
 
-| Architectural Dimension | Score | Hardening Applied |
-| :--- | :---: | :--- |
-| **Security & Containment** | **8/10** | REST completely rejects server-local filesystem paths (`SourcePayload::Path` -> HTTP 400); split materialization enforces strict path component validation, rejecting traversal (`..`), slashes, null bytes, and sandbox escapes. Local SDK paths remain fully supported. |
-| **Resource Governance** | **7/10** | Bounded streaming copy with 1-byte lookahead probe; aggregate input quotas covering auxiliary files (certificates, forms); split response payload aggregate ceiling (100 MiB); bookmark pagination node budget (max 5,000 nodes total). |
-| **Correctness & Failure Semantics** | **8/10** | Fail-closed split delivery (no 0-byte corrupt results); strictly advancing pagination offsets (`next > offset`); non-side-effecting `HttpBody` cursor preservation across comparisons. |
-| **Separation of Concerns** | **8/10** | Hexagonal architecture (`OperationExecutor` port decoupled from `AutomationEngineAdapter`), enabling mock execution without engine binaries. |
-| **Test Quality** | **8/10** | Mutation tests confirming negative checks fail when guards are disabled; 71 Rust tests + 18 Python tests. |
+- **Strict Sandbox & Path Traversal Containment:** The REST microservice completely rejects server-local filesystem paths (`SourcePayload::Path` -> HTTP 400), requiring inputs as binary streams or in-memory Base64 to prevent arbitrary filesystem reads. Multipart and split filename extractors enforce strict path sanitization against directory traversal (`..`), slashes, and null bytes.
+- **Resource Governance & Memory Bounds:** Bounded streaming copy with a 1-byte lookahead probe, aggregate input ceilings for multi-file batches (100 MiB payload cap), and outline node pagination budgets (maximum 5,000 nodes).
+- **Fail-Closed Delivery:** Corrupt, zero-byte, or partial files are never delivered. Failed operations cleanly abort and purge temporary files.
+- **Hexagonal Architecture:** Decoupled `OperationExecutor` port enabling isolated execution, mock test harnesses, and panic containment (`std::panic::catch_unwind`) so untrusted documents cannot destabilize the host application.
+- **Strict Contract Integrity:** Automated CI gates verifying 100% schema alignment across OpenAPI 3.1, Rust domain models, Python dataclasses, and TypeScript interfaces.
 
 ---
 

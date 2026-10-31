@@ -162,6 +162,20 @@ The implementation was developed with iterative adversarial reviews and direct i
 
 ---
 
+### 📦 Consuming the SDK in External Repositories
+
+To integrate PdfCraft programmatically into external applications, pipelines, and services:
+
+| Language / Platform | Dependency Declaration / Installation Command |
+| :--- | :--- |
+| **Rust (`Cargo.toml`)** | `pdfcraft-sdk = { git = "https://github.com/richfrem/pdfcraft.git", branch = "main" }` |
+| **Python (`pip`)** | `pip install "git+https://github.com/richfrem/pdfcraft.git#subdirectory=sdks/python"` |
+| **TypeScript / Node (`npm`)** | `npm install "github:richfrem/pdfcraft#subdirectory=sdks/typescript"` |
+| **REST Microservice** | Launch daemon: `cargo run -p pdfcraft-rest -- --port 8080 --auth-token "your-token"` |
+| **Other Languages (Go, C#, Java)** | Generate typed client from [`sdks/openapi.json`](sdks/openapi.json) via `openapi-generator-cli` |
+
+---
+
 ### 🚀 Quick Start with the Fork Components
 
 #### 1. In-Process Rust SDK (`crates/sdk`)

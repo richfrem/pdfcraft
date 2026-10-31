@@ -54,6 +54,7 @@
 
 <p align="center">
   <a href="#fork-overview-enterprise-sdk--rest-api"><b>⚡ Fork: SDK & REST API</b></a> ·
+  <a href="BUILD.md"><b>🛠️ Build & Run Guide</b></a> ·
   <a href="#highlights">Highlights</a> ·
   <a href="#read-anything-beautifully">Read</a> ·
   <a href="#find-it-select-it-copy-it">Find</a> ·
@@ -228,6 +229,7 @@ await merged.saveToFile("invoices.pdf");
 - **[Runnable Code Examples](docs/sdk/examples/)**: Production-ready scripts in Rust, Python, and TypeScript.
 - **[Rust SDK Crate](crates/sdk/README.md)**: `pdfcraft-sdk` internal crate documentation.
 - **[REST Service Crate](crates/rest/README.md)**: `pdfcraft-rest` internal microservice crate documentation.
+- **[Building & Running Guide](BUILD.md)**: How to run the desktop app, build minimal SDK targets, launch the REST daemon, and test.
 - **[SDK Quick Guide Link](docs/sdk.md)** and **[API Reference Quick Link](docs/sdk-api-reference.md)**: Top-level documentation portals.
 
 ---
@@ -542,6 +544,8 @@ poppler over the corpus on demand (`cargo xtask text-oracle`).
 PdfCraft is a clean-room implementation. Its behaviour comes from the ISO 32000 specification and black-box observation, never from anyone else's code. Every icon, font and image is openly licensed and listed in [ATTRIBUTION.md](ATTRIBUTION.md).
 
 ## Get started
+
+See the complete **[Build & Run Guide](BUILD.md)** for detailed instructions on launching the desktop app, minimal headless SDK builds, the REST microservice, and language bindings.
 
 Building needs Rust 1.95 or later.
 

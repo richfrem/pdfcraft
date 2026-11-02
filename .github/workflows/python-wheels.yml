@@ -1,0 +1,117 @@
+# Python SDK wheels: build the maturin wheel (PyO3 `_native` + the pure-Python wrappers) on
+# Windows x64 and macOS arm64, smoke-test each by installing it into a clean venv and merging two
+# PDFs through the native engine, upload the wheels as artifacts, and (manual run with a tag)
+# attach them to a GitHub release. Until this existed only a hand-built macOS arm64 wheel was
+# published (see RELEASE_SDK.md), so Windows consumers had no native engine.
+name: Python wheels
+
+on:
+  pull_request:
+    paths:
+      - Cargo.toml
+      - Cargo.lock
+      - "crates/**"
+      - "sdks/python/**"
+      - .github/workflows/python-wheels.yml
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Existing release tag to attach the wheels to, e.g. v0.16.1 (empty: build only)"
+        type: string
+        default: ""
+
+concurrency:
+  group: python-wheels-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  wheel:
+    name: wheel (${{ matrix.label }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, label: windows-x64, python: "3.12" }
+          - { os: windows-latest, label: windows-x64, python: "3.13" }
+          - { os: macos-14, label: macos-arm64, python: "3.13" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: ". -> target"
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Build the wheel
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip "maturin>=1.5,<2.0"
+          cd sdks/python
+          maturin build --release --interpreter python --out ../../target/wheels
+      - name: Smoke test the wheel in a clean venv
+        shell: bash
+        run: |
+          python -m venv "$RUNNER_TEMP/wheel-venv"
+          if [ -x "$RUNNER_TEMP/wheel-venv/Scripts/python.exe" ]; then PY="$RUNNER_TEMP/wheel-venv/Scripts/python.exe"; else PY="$RUNNER_TEMP/wheel-venv/bin/python"; fi
+          "$PY" -m pip install target/wheels/*.whl
+          # Run from outside the checkout so the installed wheel is imported, not the source tree.
+          cd "$RUNNER_TEMP"
+          "$PY" - <<'PYEOF'
+          import io, pathlib, tempfile
+          import pypdf
+          import pdfcraft
+          from pdfcraft import LocalClient, MergeOptions
+          import pdfcraft._native
+          print("pdfcraft imported from", pathlib.Path(pdfcraft.__file__).parent)
+          with tempfile.TemporaryDirectory() as tmp:
+              inputs = []
+              for n in (1, 2):
+                  writer = pypdf.PdfWriter()
+                  writer.add_blank_page(width=612, height=792)
+                  path = pathlib.Path(tmp) / f"in{n}.pdf"
+                  with open(path, "wb") as fh:
+                      writer.write(fh)
+                  inputs.append(path)
+              result = LocalClient().merge(inputs, MergeOptions(output_filename="smoke-merged.pdf"))
+              data = result.data if result.data is not None else pathlib.Path(result.path).read_bytes()
+              pages = len(pypdf.PdfReader(io.BytesIO(data)).pages)
+          assert pages == 2, f"expected 2 merged pages, got {pages}"
+          print("native merge OK:", pages, "pages")
+          PYEOF
+      - name: Checksums
+        shell: bash
+        run: |
+          cd target/wheels
+          for f in *.whl; do (sha256sum "$f" 2>/dev/null || shasum -a 256 "$f") | tee "$f.sha256"; done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: wheel-${{ matrix.label }}-py${{ matrix.python }}
+          path: |
+            target/wheels/*.whl
+            target/wheels/*.sha256
+          if-no-files-found: error
+
+  attach:
+    name: attach to release
+    needs: wheel
+    if: github.event_name == 'workflow_dispatch' && inputs.release_tag != ''
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: wheels
+          pattern: wheel-*
+          merge-multiple: true
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+        run: gh release upload "$TAG" wheels/*.whl wheels/*.sha256 --repo "$GITHUB_REPOSITORY" --clobber

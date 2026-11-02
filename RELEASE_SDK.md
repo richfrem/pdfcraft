@@ -43,6 +43,13 @@ This generates self-contained wheel packages in `target/wheels/`, for example:
 * **Linux (x86_64):** `pdfcraft-0.5.0-cp313-cp313-manylinux_2_34_x86_64.whl`
 * **Windows (x64):** `pdfcraft-0.5.0-cp313-cp313-win_amd64.whl`
 
+> **CI builds the Windows and macOS wheels for you.** The `Python wheels` workflow
+> (`.github/workflows/python-wheels.yml`) builds `win_amd64` (Python 3.12 and 3.13) and
+> `macosx arm64` wheels, installs each into a clean venv and merges two PDFs through the native
+> engine. Run it from the Actions tab with `release_tag` set (for example `v0.16.1`) to attach the
+> wheels and their `.sha256` files to that release; leave it empty to only build and get artifacts.
+> Consumers that bundle the wheel (for example a Windows installer) should pin the URL and SHA-256.
+
 ### Step 3: Create GitHub Tag & Release via GitHub CLI (`gh`)
 Publish the release and attach the pre-built wheel directly:
 ```bash
